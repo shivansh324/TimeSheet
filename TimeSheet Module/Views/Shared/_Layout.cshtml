@@ -1,0 +1,122 @@
+﻿@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - TimeSheet_Module</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<link rel="stylesheet" href="~/lib/datatables/css/datatables.min.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/lib/sweetalert2/css/sweetalert2.min.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/TimeSheet_Module.styles.css" asp-append-version="true" />
+
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
+</head>
+<body>
+	@if (User.Identity.IsAuthenticated)
+	{
+		<header>
+			<nav class="navbar navbar-expand-lg mb-5">
+				<div class="container-fluid">
+					<button class="btn me-3" id="menu-toggle">
+						<i class="bi bi-list text-secondary"></i>
+					</button>
+					<a class="navbar-brand text-secondary" asp-action="Index" asp-controller="Home">
+						<img src="~/VTS.png" class="img-fluid" alt="Responsive image" width="50px">
+					</a>
+					<div class="ms-auto d-flex align-items-center">
+						<span class="text-secondary me-3">Welcome @User.FindFirst(ClaimTypes.NameIdentifier)?.Value</span>
+						<div class="dropdown">
+							<i class="bi bi-person-circle fs-4 user-dropdown-toggle" data-bs-toggle="dropdown" role="button" style="cursor:pointer;"></i>
+							<ul class="dropdown-menu dropdown-menu-end">
+								<li><a class="dropdown-item" href="#">My Profile</a></li>
+								<li><a asp-action="Logout" asp-controller="Account" class="dropdown-item">Logout</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</nav>
+			<div class="sidebar" id="sidebar">
+				<div class="close-btn" id="close-sidebar">&times;</div>
+				<div style="width: 80px; margin: auto; border-radius: 5px;" class="text-center bg-white mb-5">
+					<img src="~/VTS.png" class="img-fluid align-items-center" alt="Responsive image" width="80px">
+				</div>
+				<a asp-controller="TimeSheet" asp-action="Index">TimeSheet</a>
+				<a href="#">Link 2</a>
+				<div class="dropdown">
+					<a class="dropdown-toggle" data-bs-toggle="collapse" href="#subLinks">Dropdown Link</a>
+					<div class="collapse" id="subLinks">
+						<a href="#" class="ps-4">Sub Link 2</a>
+						<a href="#" class="ps-4">Sub Link 3</a>
+					</div>
+				</div>
+			</div>
+			@* <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"> *@
+			@*     <div class="container-fluid"> *@
+			@*         <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TimeSheet_Module</a> *@
+			@*         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" *@
+			@*                 aria-expanded="false" aria-label="Toggle navigation"> *@
+			@*             <span class="navbar-toggler-icon"></span> *@
+			@*         </button> *@
+			@*         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between"> *@
+			@*             <ul class="navbar-nav flex-grow-1"> *@
+			@*                 <li class="nav-item"> *@
+			@*                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a> *@
+			@*                 </li> *@
+			@*                 <li class="nav-item"> *@
+			@*                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a> *@
+			@*                 </li> *@
+			@*             </ul> *@
+			@*         </div> *@
+			@*     </div> *@
+			@* </nav> *@
+		</header>
+	}
+	<div class="container px-5" style="max-width:inherit">
+		<main role="main" class="mb-3">
+			<partial name="_Notification" />
+			@RenderBody()
+		</main>
+	</div>
+	@if (User.Identity.IsAuthenticated)
+	{
+		<footer class="border-top footer text-muted">
+			<div class="container">
+				&copy; 2025 - TimeSheet_Module - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+			</div>
+		</footer>
+	}
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="/lib/datatables/js/datatables.min.js"></script>
+	<script src="/lib/sweetalert2/js/sweetalert2.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	@await RenderSectionAsync("Scripts", required: false)
+	@if (User.Identity.IsAuthenticated)
+	{
+		<script>
+			const menuToggle = document.getElementById("menu-toggle");
+			const sidebar = document.getElementById("sidebar");
+			const closeSidebar = document.getElementById("close-sidebar");
+
+			menuToggle.addEventListener("click", () => {
+				sidebar.classList.add("active");
+			});
+
+			closeSidebar.addEventListener("click", () => {
+				sidebar.classList.remove("active");
+			});
+			document.addEventListener("click", (event) => {
+				const isClickInsideSidebar = sidebar.contains(event.target);
+				const isClickOnToggle = menuToggle.contains(event.target);
+
+				if (!isClickInsideSidebar && !isClickOnToggle) {
+					sidebar.classList.remove("active");
+				}
+			});
+		</script>
+	}
+</body>
+</html>

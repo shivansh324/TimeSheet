@@ -1,0 +1,123 @@
+﻿<style>
+	.day-btn:hover {
+		background-color: lightgray;
+	}
+</style>
+<div class="bg-primary text-white mb-3 p-3 row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-2 rounded">
+	<div class="col text-sm-center text-center text-md-start text-lg-start">
+		<h6 class="card-title timesheet-title">Status: <span id="Status">OPEN</span></h6>
+	</div>
+	<div class="mt-2 col text-center text-sm-center text-md-end text-lg-end">
+		<button class="btn btn-outline-light fw-bold" id="prevWeek"> &lt;&lt;  </button>
+		<span class="week-range" id="weekRange"></span>
+		<button class="btn btn-outline-light fw-bold" id="nextWeek"> &gt;&gt; </button>
+	</div>
+</div>
+
+<!-- DataTable -->
+<div class="table-responsive">
+	<table id="wokingHoursTable" class="table table-bordered">
+		<thead class="text-light" style="background-color: #ff9800;">
+			<tr class="text-nowrap">
+				<th class="w-50">Working Hours</th>
+				<th class="MonWeekDay">Mon </th>
+				<th class="TueWeekDay">Tue </th>
+				<th class="WedWeekDay">Wed </th>
+				<th class="ThuWeekDay">Thu </th>
+				<th class="FriWeekDay">Fri </th>
+				<th class="SatWeekDay">Sat </th>
+				<th class="SunWeekDay">Sun </th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Working Hours</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+<div class="table-responsive">
+	<table id="milestoneTable" class="table table-bordered">
+		<thead class="text-light" style="background-color: #ff9800;">
+			<tr class="text-nowrap">
+				<th class="w-50">Milestone</th>
+				<th class="MonWeekDay">Mon </th>
+				<th class="TueWeekDay">Tue </th>
+				<th class="WedWeekDay">Wed </th>
+				<th class="ThuWeekDay">Thu </th>
+				<th class="FriWeekDay">Fri </th>
+				<th class="SatWeekDay">Sat </th>
+				<th class="SunWeekDay">Sun </th>
+			</tr>
+		</thead>
+	</table>
+</div>
+<div class="table-responsive">
+	<table id="projectTable" class="table table-bordered w-100">
+		<thead class="text-light" style="background-color: #ff9800;">
+			<tr class="text-nowrap">
+				<th>Project Code</th>
+				<th>Project Description</th>
+				<th>Milestone Code</th>
+				<th>Milestone Description</th>
+				<th>Task Code</th>
+				<th>Task Description</th>
+				<th>Assigned Hours</th>
+				<th class="MonWeekDay">Mon </th>
+				<th class="TueWeekDay">Tue </th>
+				<th class="WedWeekDay">Wed </th>
+				<th class="ThuWeekDay">Thu </th>
+				<th class="FriWeekDay">Fri </th>
+				<th class="SatWeekDay">Sat </th>
+				<th class="SunWeekDay">Sun </th>
+				<th>Total Hours</th>
+				<th>Pending Hours</th>
+			</tr>
+		</thead>
+	</table>
+</div>
+
+<div class="d-flex justify-content-between mt-4">
+	<button onClick="window.history.back()" class="btn btn-secondary">Back</button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="entryModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="weekForm">
+				<div class="modal-header">
+					<h5 class="modal-title">Enter Time and Remark</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<input id="MilestoneId" name="MilestoneId" hidden />
+					<input id="Date" name="Date" hidden />
+					<div class="mb-3">
+						<label for="Hours" class="form-label">Working Hours</label>
+						<input id="Hours" name="Hours" type="Time" class="form-control" required>
+					</div>
+					<div class="mb-3">
+						<label for="IsBillable" class="form-label">Is Billable?</label>
+						<select id="IsBillable" name="IsBillable" class="form-select">
+							<option value=true>Billable</option>
+							<option value=false>Non Billable</option>
+						</select>
+					</div>
+					<div class="mb-3">
+						<label for="Remarks" class="form-label">Remark</label>
+						<textarea id="Remarks" name="Remarks" class="form-control" rows="6" required></textarea>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-success">Save</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script src="~/js/TimeSheetInfo.js"></script>
+}
