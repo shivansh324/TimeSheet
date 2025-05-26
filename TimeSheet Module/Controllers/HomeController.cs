@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Azure;
@@ -18,14 +19,10 @@ using TimeSheet_Module.Services.Implementations;
 namespace TimeSheet_Module.Controllers
 {
     //[Authorize]
-    public class HomeController : Controller
+    public class HomeController(ILogger<HomeController> logger, ApplicationDbContext db) : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+        private readonly ILogger<HomeController> _logger = logger;
+        private readonly ApplicationDbContext _db = db;
 
         public IActionResult Index()
         {
