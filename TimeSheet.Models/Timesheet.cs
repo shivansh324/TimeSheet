@@ -35,5 +35,7 @@ namespace TimeSheet.Models
         public long Hours { get; set; } = 0;
         public string? Remarks { get; set; }
         public bool IsBillable { get; set; }
+
+        public string? Status { get; set; } = "Open";//Open, Approved, Rejected, Pending
     }
 }

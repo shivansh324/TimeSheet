@@ -1,7 +1,7 @@
 ﻿let currentWeekOffset = 0;
 var projectDataTable;
 var milestoneDataTable;
-var wokingHoursDatatable;
+var workingHoursDataTable;
 var monday;
 var tuesday;
 var wednesday;
@@ -40,7 +40,12 @@ const updateWeekRange = () => {
     $(".SatWeekDay").html("Sat " + formatDate(saturday));
     $(".SunWeekDay").html("Sun " + formatDate(sunday));
 };
-function WeekModal(date, id, hours, remarks, IsBillable) {
+function WeekModal(date, id, hours, remarks, IsBillable, project, timesheetId) {
+    $("#IsBillable").val("true");
+    $("#IsProject").val(project);
+    $("#MilestoneId").val(id);
+    $("#Date").val(date);
+    $("#TimesheetId").val(timesheetId)
     if (hours == 0 && remarks == null) {
         $('#Hours').val('');
         $('#Remarks').val('');
@@ -48,12 +53,9 @@ function WeekModal(date, id, hours, remarks, IsBillable) {
         $('#Hours').val(hours);
         $('#Remarks').val(remarks);
     }
-    $("#MilestoneId").val(id);
-    $("#Date").val(date);
+
     if (IsBillable == false) {
         $("#IsBillable").val("false");
-    } else {
-        $("#IsBillable").val("true");
     }
     modal.show();
 }
@@ -63,18 +65,22 @@ function getDayOfWeek(dateStr) {//Return the day of the week from date string
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return days[date.getDay()];
 }
-
-function getHoursForDay(timesheets, day, id, date) {
+function getWorkingHoursForDay(workingHours, day) {
+    if (!workingHours || !Array.isArray(workingHours)) return '-';
+    const entry = workingHours.find(wh => getDayOfWeek(wh.date) === day);
+    return entry ? ticksToTimespan(entry.hours) : '-';
+}
+function getHoursForDay(timesheets, day, id, date, project) {
     if (!timesheets || !Array.isArray(timesheets)) return '-';
     const entry = timesheets.find(ts => getDayOfWeek(ts.date) === day);
     if (entry) {
         return `<button class="btn btn-sm btn-light day-btn btn-outline-secondary text-dark"
-                 onClick="WeekModal('${entry.date}',${id},'${entry.hours}','${entry.remarks}',${entry.isBillable})">
+                 onClick="WeekModal('${entry.date}',${id},'${entry.hours}','${entry.remarks}',${entry.isBillable}, ${project}, ${entry.id})">
                      ${entry ? entry.hours : '-'}
                   </button>`;
     } else {
         return `<button class="btn btn-sm btn-light day-btn btn-outline-secondary text-dark"
-                 onClick="WeekModal('${date}',${id},0,null,true)">-</button>`;
+                 onClick="WeekModal('${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}',${id},0,null,true,${project},0)">-</button>`;
     }
 
 }
@@ -105,13 +111,13 @@ $(document).ready(function () {
             { data: 'taskCode' },
             { data: 'taskDescription' },
             { data: 'assignedHours', render: data => ticksToTimespan(data) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday, true) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday, true) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday, true) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday, true) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday, true) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday, true) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday, true) },
             { data: 'totalWorkingHours', render: data => ticksToTimespan(data) },
             { data: 'pendingWorkingHours', render: data => ticksToTimespan(data) }
         ]
@@ -135,16 +141,16 @@ $(document).ready(function () {
         },
         "columns": [
             { data: 'name' },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday) }
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday, false) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday, false) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday, false) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday, false) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday, false) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday, false) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday, false) }
         ]
     });
-    wokingHoursDataTable = $('#wokingHoursTable').DataTable({
+    workingHoursDataTable = $('#wokingHoursTable').DataTable({
         paging: false,
         info: false,
         searching: false,
@@ -162,61 +168,14 @@ $(document).ready(function () {
             }
         },
         "columns": [
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            },
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            },
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            },
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            },
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            },
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            },
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            },
-            {
-                data: null,
-                render: function () {
-                    return 'Working Hours';
-                }
-            }
-            //{ data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday) },
-            //{ data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday) },
-            //{ data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday) },
-            //{ data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday) },
-            //{ data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday) },
-            //{ data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday) },
-            //{ data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday) }
+            { data: null, render: data => 'Working Hours' },
+            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Mon') },
+            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Tue') },
+            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Wed') },
+            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Thu') },
+            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Fri') },
+            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Sat') },
+            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Sun') }
         ]
     });
     updateWeekRange();
@@ -228,6 +187,7 @@ $('#prevWeek').on('click', function () {
     updateWeekRange();
     projectDataTable.ajax.reload();
     milestoneDataTable.ajax.reload();
+    workingHoursDataTable.ajax.reload();
 });
 
 $('#nextWeek').on('click', function () {
@@ -235,6 +195,7 @@ $('#nextWeek').on('click', function () {
     updateWeekRange();
     projectDataTable.ajax.reload();
     milestoneDataTable.ajax.reload();
+    workingHoursDataTable.ajax.reload();
 });
 
 // Modal Logic
@@ -253,41 +214,43 @@ let modal = new bootstrap.Modal(document.getElementById('entryModal'));
 //});
 
 $('#weekForm').on('submit', function (e) {
-    //e.preventDefault();
-    //var formData = new FormData(this);
-    //$.ajax({
-    //    url: '/TimeSheet/UpdateWeeklyTimeSheet',
-    //    type: 'POST',
-    //    data: formData,
-    //    contentType: false,
-    //    processData: false,
-    //    success: function (response) {
-    //        console.log(response);
-    //        if (response.success) {
-    //            modal.hide();
-    //            datatable.ajax.reload();
-    //            Swal.fire({
-    //                icon: "success",
-    //                title: "Your work has been saved",
-    //                showConfirmButton: false,
-    //                timer: 800
-    //            });
-    //        } else {
-    //            Swal.fire({
-    //                icon: "error",
-    //                title: 500,
-    //                text: 'Contact IT for Help!!'
-    //            });
-    //        }
-    //    },
-    //    error: function (error) {
-    //        modal.hide();
-    //        Swal.fire({
-    //            icon: "error",
-    //            title: error.status,
-    //            text: error.responseJSON.error,
-    //            footer: 'Contact IT for Help!!'
-    //        });
-    //    }
-    //});
+    e.preventDefault();
+    var formData = new FormData(this);
+    $.ajax({
+        url: '/TimeSheet/SetTimesheet',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            console.log(response);
+            if (response.success) {
+                modal.hide();
+                projectDataTable.ajax.reload();
+                milestoneDataTable.ajax.reload();
+                workingHoursDataTable.ajax.reload();
+                Swal.fire({
+                    icon: "success",
+                    title: "Your work has been saved",
+                    showConfirmButton: false,
+                    timer: 800
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: 500,
+                    text: 'Contact IT for Help!!'
+                });
+            }
+        },
+        error: function (error) {
+            modal.hide();
+            Swal.fire({
+                icon: "error",
+                title: error.status,
+                text: error.responseJSON.error,
+                footer: 'Contact IT for Help!!'
+            });
+        }
+    });
 });

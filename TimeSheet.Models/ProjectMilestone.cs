@@ -40,7 +40,6 @@ namespace TimeSheet.Models
         public long TotalWorkingHours { get; set; } = 0;
         [Display(Name = "Pending Working Hours")] //Total Hours Pending in Ticks
         public long PendingWorkingHours { get; set; } = 0;
-        public string? Status { get; set; } = "Open";
 
         [Display(Name = "Rejection Remarks")]
         public string? RejectionRemarks { get; set; }

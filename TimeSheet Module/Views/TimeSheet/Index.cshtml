@@ -79,6 +79,7 @@
 
 <div class="d-flex justify-content-between mt-4">
 	<button onClick="window.history.back()" class="btn btn-secondary">Back</button>
+	<button class="btn btn-success">Submit</button>
 </div>
 
 <!-- Modal -->
@@ -93,6 +94,8 @@
 				<div class="modal-body">
 					<input id="MilestoneId" name="MilestoneId" hidden />
 					<input id="Date" name="Date" hidden />
+					<input id="IsProject" name="IsProject" hidden />
+					<input id="TimesheetId" name="TimesheetId" hidden />
 					<div class="mb-3">
 						<label for="Hours" class="form-label">Working Hours</label>
 						<input id="Hours" name="Hours" type="Time" class="form-control" required>

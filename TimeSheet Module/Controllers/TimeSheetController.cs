@@ -36,7 +36,7 @@ namespace TimeSheet_Module.Controllers
             return View();
         }
 
-
+        #region Setting Test Data
         //public IActionResult SetTestData()
         //{
         //    TimeSpan temp = new TimeSpan(170, 0, 0);
@@ -82,6 +82,7 @@ namespace TimeSheet_Module.Controllers
         //    _db.SaveChanges();
         //    return Ok("done");
         //}
+        #endregion
 
         #region API Calls
         [HttpPost]
@@ -171,11 +172,11 @@ namespace TimeSheet_Module.Controllers
                 int offset = request.WeekOffset;
                 DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Now, offset));
                 DateOnly endDate = startDate.AddDays(6);
-                var workingHours = _db.Employees.Where(x => x.Id == id).Include(x => x.WorkingHours).SelectMany(x => x.WorkingHours.Where(y => y.Date >= startDate && y.Date <= endDate)).ToList();
-                //List<WorkingHours> workingHours = _db.WorkingHours.Where(x => x.EmployeeId == id).Where(x => x.Date >= startDate && x.Date <= endDate).ToList();
+                List<WorkingHours> workingHours = _db.Employees.Where(x => x.Id == id).Include(x => x.WorkingHours).SelectMany(x => x.WorkingHours.Where(y => y.Date >= startDate && y.Date <= endDate)).ToList();
+                var data = new[] { new { workingHours = workingHours } };
                 return Json(new
                 {
-                    data = workingHours
+                    data = data
                 });
             }
             catch (Exception ex)
@@ -186,12 +187,97 @@ namespace TimeSheet_Module.Controllers
         }
 
         [HttpPost]
-        public IActionResult SetTimesheet()
+        public IActionResult SetTimesheet(int MilestoneId, int TimesheetId, string Date, TimeSpan Hours, string Remarks, bool IsBillable, bool IsProject)
         {
-            return Ok();
+            try
+            {
+                var temp_date = DateOnly.Parse(Date);
+                Milestone? milestone = null;
+                ProjectMilestone? projectMilestone = null;
+                Timesheet? timesheet = null;
+                int id = int.Parse(User?.FindFirst(ClaimTypes.Name).Value);//Employee ID
+                if (IsProject)
+                {
+                    projectMilestone = _db.Find<ProjectMilestone>(MilestoneId);
+                }
+                else
+                {
+                    milestone = _db.Find<Milestone>(MilestoneId);
+                }
+                if (TimesheetId != 0)
+                {
+                    timesheet = _db.Find<Timesheet>(TimesheetId);
+                }
+                WorkingHours? workingHours = _db.WorkingHours.FirstOrDefault(x => x.EmployeeId == id && x.Date == DateOnly.Parse(Date));
+                if (workingHours == null)
+                {
+                    return StatusCode(404, new { error = "Working Hours not found, please try again later" });
+                }
+                if (timesheet != null && timesheet.Status == "Pending")
+                {
+                    return StatusCode(400, new { error = "Timesheet already submitted. Can't update it." });
+                }
+                if (projectMilestone != null && Hours.Ticks >= projectMilestone.PendingWorkingHours)
+                {
+                    return StatusCode(400, new { error = "You cannot add more than Pending working hours" });
+                }
+
+                if (timesheet != null)
+                {
+                    long temp_hours = timesheet.Hours;
+                    if (Hours.Ticks > workingHours.Hours + temp_hours)
+                    {
+                        return StatusCode(400, new { error = "You cannot add more than Actual working hours" });
+                    }
+                    workingHours.Hours -= (Hours.Ticks - temp_hours);
+                    timesheet.Hours = Hours.Ticks;
+                    timesheet.Remarks = Remarks;
+                    timesheet.IsBillable = IsBillable;
+                    if (projectMilestone != null)
+                    {
+                        projectMilestone.PendingWorkingHours -= (Hours.Ticks - temp_hours);
+                        projectMilestone.TotalWorkingHours += (Hours.Ticks - temp_hours);
+                        _db.ProjectMilestones.Update(projectMilestone);
+                    }
+                    _db.Timesheets.Update(timesheet);
+                    _db.WorkingHours.Update(workingHours);
+                    _db.SaveChanges();
+                }
+                else
+                {
+                    if (Hours.Ticks > workingHours.Hours)
+                    {
+                        return StatusCode(400, new { error = "You cannot add more than Actual working hours" });
+                    }
+                    Timesheet newTimesheet = new Timesheet
+                    {
+                        EmployeeId = id,
+                        MilestoneId = IsProject ? null : MilestoneId,
+                        ProjectMilestoneId = IsProject ? MilestoneId : null,
+                        Date = DateOnly.Parse(Date),
+                        Hours = Hours.Ticks,
+                        Remarks = Remarks,
+                        IsBillable = IsBillable,
+                        Status = "Open"
+                    };
+                    if (projectMilestone != null)
+                    {
+                        projectMilestone.PendingWorkingHours -= Hours.Ticks;
+                        projectMilestone.TotalWorkingHours += Hours.Ticks;
+                        _db.ProjectMilestones.Update(projectMilestone);
+                    }
+                    _db.Timesheets.Add(newTimesheet);
+                    workingHours.Hours -= Hours.Ticks;
+                    _db.WorkingHours.Update(workingHours);
+                    _db.SaveChanges();
+                }
+                return Json(new { success = "true", message = "Done" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
-
-
         #endregion
     }
 }
