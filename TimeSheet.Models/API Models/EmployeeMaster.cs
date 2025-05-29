@@ -17,7 +17,6 @@ namespace TimeSheet.Models.API_Models
     public class EmployeeZing
     {
         public string? EmployeeCode { get; set; }
-        public string? EmployeeID { get; set; }
         public string? EmployeeName { get; set; }
         public string? Email { get; set; }
         //public Approver? ApproverDetails { get; set; }

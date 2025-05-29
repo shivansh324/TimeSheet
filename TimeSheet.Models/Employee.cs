@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace TimeSheet.Models
@@ -11,7 +12,6 @@ namespace TimeSheet.Models
         [Required]
         public string? EmployeeCode { get; set; }
         [Required]
-        public string? EmployeeID { get; set; } //Zing Id
         public string? Name { get; set; }
         [Required]
         public string? Email { get; set; }
@@ -27,6 +27,14 @@ namespace TimeSheet.Models
         [ForeignKey("ApproverId")]
         [ValidateNever]
         public Employee? Approver { get; set; }
+
+        public string Role { get; set; } = "Employee";
+
+        [JsonIgnore]
+        [Required]
+        public string? Password { get; set; }
+
+        public string? Status { get; set; } = "Active"; //Active, Inactive
 
         public ICollection<WorkingHours>? WorkingHours { get; set; } = [];
         public ICollection<Timesheet>? Timesheets { get; set; } = [];

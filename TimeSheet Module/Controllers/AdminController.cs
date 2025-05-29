@@ -25,8 +25,6 @@ namespace TimeSheet_Module.Controllers
             ViewBag.Departments = await _db.Departments.OrderBy(x=>x.Name).ToListAsync();
             return View(await _db.Milestones.Include(x=>x.Department).ToListAsync());
         }
-        
-        
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -59,7 +57,6 @@ namespace TimeSheet_Module.Controllers
             return View(nameof(Department));
         }
 
-
         [HttpPost]
         public async Task<IActionResult> DeleteDepartment(int id)
         {
@@ -76,7 +73,7 @@ namespace TimeSheet_Module.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Milestone(int? Id,string Name, int DepartmentId)
+        public async Task<IActionResult> Milestone(int? Id,string Name, int DepartmentId, string Status)
         {
             if (ModelState.IsValid)
             {
@@ -89,6 +86,7 @@ namespace TimeSheet_Module.Controllers
                     }
                     milestone.Name = Name;
                     milestone.DepartmentId = DepartmentId;
+                    milestone.Status = Status;
                     _db.Milestones.Update(milestone);
                 }
                 else
@@ -96,7 +94,8 @@ namespace TimeSheet_Module.Controllers
                     Milestone milestone = new Milestone
                     {
                         Name = Name,
-                        DepartmentId = DepartmentId
+                        DepartmentId = DepartmentId,
+                        Status = Status
                     };
                     _db.Milestones.Add(milestone);
                 }

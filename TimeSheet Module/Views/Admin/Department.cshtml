@@ -61,6 +61,9 @@
 </div>
 
 @section Scripts {
+	@{
+		<partial name="_ValidationScriptsPartial" />
+	}
 	<script>
 		$("#DepartmentTable").DataTable({"pageLength": 25});
 		function Create(){

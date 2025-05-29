@@ -45,13 +45,17 @@
 				</div>
 				<a asp-controller="TimeSheet" asp-action="Index">TimeSheet</a>
 				@* <a href="#">Link 2</a> *@
-				<div class="dropdown">
-					<a class="dropdown-toggle" data-bs-toggle="collapse" href="#subLinks">Admin</a>
-					<div class="collapse" id="subLinks">
-						<a asp-controller="Admin" asp-action="Department" class="ps-4">Department</a>
-						<a asp-controller="Admin" asp-action="Milestone" class="ps-4">Non-Tech Milestones</a>
+				@if (User.IsInRole("Admin"))
+				{
+					<div class="dropdown">
+						<a class="dropdown-toggle" data-bs-toggle="collapse" href="#subLinks">Admin</a>
+						<div class="collapse" id="subLinks">
+							<a asp-controller="Account" asp-action="Employees" class="ps-4">Employees</a>
+							<a asp-controller="Admin" asp-action="Department" class="ps-4">Department</a>
+							<a asp-controller="Admin" asp-action="Milestone" class="ps-4">Non-Tech Milestones</a>
+						</div>
 					</div>
-				</div>
+				}
 			</div>
 			@* <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"> *@
 			@*     <div class="container-fluid"> *@

@@ -17,7 +17,7 @@ namespace TimeSheet_Module.Services.Jobs
         private async Task SendReminderMail()
         {
             EmailSender emailSender = new EmailSender();
-            List<Employee> employees = await _db.Employees.ToListAsync();
+            List<Employee> employees = await _db.Employees.Where(x=>x.Status=="Active").ToListAsync();
 
             string subject = "Gentle Reminder: Please Complete Your Timesheet";
             foreach (Employee emp in employees)

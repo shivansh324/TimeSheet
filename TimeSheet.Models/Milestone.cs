@@ -22,6 +22,8 @@ namespace TimeSheet.Models
         [ValidateNever]
         [ForeignKey("DepartmentId")]
         public Department? Department { get; set; }
+
+        public string? Status { get; set; } = "Active";//Active, Inactive
         public ICollection<Timesheet>? Timesheets { get; set; } = [];
     }
 }

@@ -1,0 +1,74 @@
+﻿@model EmployeeVM
+<h1>Register</h1>
+<form method="post">
+	<div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-2">
+		<div class="col mb-2">
+			<label asp-for="EmployeeCode" class="form-label">Employee Code</label>
+			<input asp-for="EmployeeCode" class="form-control">
+			<span asp-validation-for="EmployeeCode" class="text-danger"></span>
+		</div>
+		<div class="col mb-2">
+			<label asp-for="Name" class="form-label">Employee Name</label>
+			<input asp-for="Name" class="form-control">
+			<span asp-validation-for="Name" class="text-danger"></span>
+		</div>
+		<div class="col mb-2">
+			<label asp-for="Email" class="form-label"></label>
+			<input type="email" asp-for="Email" class="form-control">
+			<span asp-validation-for="Email" class="text-danger"></span>
+		</div>
+		<div class="col mb-2">
+			<label asp-for="DepartmentId" class="form-label"></label>
+			<select id="DepartmentDropDown" asp-for="DepartmentId" class="form-control" required>
+				<option selected disabled value="">-- Select Department --</option>
+				@foreach (var department in ViewBag.Departments)
+				{
+					<option value="@department.Id">@department.Name</option>
+				}
+			</select>
+			<span asp-validation-for="DepartmentId" class="text-danger"></span>
+		</div>
+		<div class="col mb-2">
+			<label asp-for="ApproverId" class="form-label"></label>
+			<select id="ApproverDropDown" asp-for="ApproverId" class="form-control">
+				<option selected disabled value="">-- Select Approver --</option>
+				@foreach (var approver in ViewBag.Approvers)
+				{
+					<option value="@approver.Id">@approver.EmployeeCode -- @approver.Name</option>
+				}
+			</select>
+			<span asp-validation-for="ApproverId" class="text-danger"></span>
+		</div>
+		<div class="col mb-2">
+			<label asp-for="Status" class="form-label"></label>
+			<select asp-for="Status" class="form-control">
+				<option selected value="Active">Active</option>
+				<option value="Inactive">Inactive</option>
+			</select>
+			<span asp-validation-for="Status" class="text-danger"></span>
+		</div>
+		<div class="col mb-2">
+			<label asp-for="Password" class="form-label"></label>
+			<input asp-for="Password" class="form-control">
+			<span asp-validation-for="Password" class="text-danger"></span>
+		</div>
+		<div class="col mb-2">
+			<label asp-for="ConfirmPassword" class="form-label"></label>
+			<input asp-for="ConfirmPassword" class="form-control">
+			<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="mt-3">
+		<button type="button" onclick="window.history.back()" class="btn btn-secondary mx-2">Back</button>
+		<button type="submit" class="btn btn-primary mx-2">Register</button>
+	</div>
+</form>
+@section Scripts {
+	@{
+		<partial name="_ValidationScriptsPartial" />
+	}
+	<script>
+		var passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@@$!%*?&.,])[A-Za-z\d@@$!%*?&.,]{8,}$/;
+	</script>
+
+}

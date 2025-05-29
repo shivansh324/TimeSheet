@@ -21,6 +21,9 @@
 			<th>
 				Department
 			</th>
+			<th>
+				Status
+			</th>
 			<th>Action</th>
 		</tr>
 	</thead>
@@ -35,7 +38,11 @@
 					@Html.DisplayFor(modelItem => item.Department.Name)
 				</td>
 				<td>
-					<button type="button" class="btn btn-outline-success" onclick="Edit(@item.Id, '@item.Name','@item.DepartmentId')"><i class="bi bi-pencil-square"></i> Edit</button> |
+					@Html.DisplayFor(modelItem => item.Status)
+				</td>
+
+				<td>
+					<button type="button" class="btn btn-outline-success" onclick="Edit(@item.Id, '@item.Name','@item.DepartmentId','@item.Status')"><i class="bi bi-pencil-square"></i> Edit</button> |
 					<button type="button" class="btn btn-outline-danger" onclick="Delete(@item.Id)"><i class="bi bi-trash-fill"></i> Delete</button>
 				</td>
 			</tr>
@@ -67,6 +74,13 @@
 							}
 						</select>
 					</div>
+					<div class="mb-3">
+						<label for="Status" class="form-label">Status</label>
+						<select id="Status" name="Status" class="form-select" required>
+							<option value="Active" selected>Active</option>
+							<option value="Inactive">Inactive</option>
+						</select>
+					</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -79,18 +93,23 @@
 
 
 @section Scripts {
+	@{
+		<partial name="_ValidationScriptsPartial" />
+	}
 	<script>
 		$("#MilestoneTable").DataTable({"pageLength": 25,"order": [[2, "asc"],[0,"asc"]]});
 		function Create() {
 			$("#Id").val(0);
 			$("#Name").val("");
 			$("#DepartmentId").val("");
+			$("#Status").val("");
 			$("#createModal").modal("show");
 		}
-		function Edit(id, name, departmentId) {
+		function Edit(id, name, departmentId, status) {
 			$("#Id").val(id);
 			$("#Name").val(name);
 			$("#DepartmentId").val(departmentId);
+			$("#Status").val(status);
 			$("#createModal").modal("show");
 		}
 		function Delete(id){

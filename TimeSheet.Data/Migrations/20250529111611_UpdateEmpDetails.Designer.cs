@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimeSheet.Data.Data;
 
@@ -11,9 +12,11 @@ using TimeSheet.Data.Data;
 namespace TimeSheet.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250529111611_UpdateEmpDetails")]
+    partial class UpdateEmpDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -137,8 +140,11 @@ namespace TimeSheet.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("EmployeeID")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
@@ -147,9 +153,6 @@ namespace TimeSheet.Data.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -175,9 +178,6 @@ namespace TimeSheet.Data.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
@@ -189,701 +189,601 @@ namespace TimeSheet.Data.Migrations
                         {
                             Id = 1,
                             DepartmentId = 1,
-                            Name = "Bid Preparation",
-                            Status = "Active"
+                            Name = "Bid Preparation"
                         },
                         new
                         {
                             Id = 2,
                             DepartmentId = 1,
-                            Name = "Pipeline creation",
-                            Status = "Active"
+                            Name = "Pipeline creation"
                         },
                         new
                         {
                             Id = 3,
                             DepartmentId = 1,
-                            Name = "BD support work",
-                            Status = "Active"
+                            Name = "BD support work"
                         },
                         new
                         {
                             Id = 4,
                             DepartmentId = 1,
-                            Name = "Bid analysis / reporting",
-                            Status = "Active"
+                            Name = "Bid analysis / reporting"
                         },
                         new
                         {
                             Id = 5,
                             DepartmentId = 1,
-                            Name = "Learning and development",
-                            Status = "Active"
+                            Name = "Learning and development"
                         },
                         new
                         {
                             Id = 6,
                             DepartmentId = 1,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 7,
                             DepartmentId = 1,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 8,
                             DepartmentId = 2,
-                            Name = "Invoicing",
-                            Status = "Active"
+                            Name = "Invoicing"
                         },
                         new
                         {
                             Id = 9,
                             DepartmentId = 2,
-                            Name = "Procurement",
-                            Status = "Active"
+                            Name = "Procurement"
                         },
                         new
                         {
                             Id = 10,
                             DepartmentId = 2,
-                            Name = "ERP",
-                            Status = "Active"
+                            Name = "ERP"
                         },
                         new
                         {
                             Id = 11,
                             DepartmentId = 2,
-                            Name = "Contract Management",
-                            Status = "Active"
+                            Name = "Contract Management"
                         },
                         new
                         {
                             Id = 12,
                             DepartmentId = 2,
-                            Name = "Project/ Business Performance Analysis and Reporting",
-                            Status = "Active"
+                            Name = "Project/ Business Performance Analysis and Reporting"
                         },
                         new
                         {
                             Id = 13,
                             DepartmentId = 2,
-                            Name = "ERP Customization",
-                            Status = "Active"
+                            Name = "ERP Customization"
                         },
                         new
                         {
                             Id = 14,
                             DepartmentId = 2,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 15,
                             DepartmentId = 3,
-                            Name = "Financial Statements preparation and analysis",
-                            Status = "Active"
+                            Name = "Financial Statements preparation and analysis"
                         },
                         new
                         {
                             Id = 16,
                             DepartmentId = 3,
-                            Name = "Payments",
-                            Status = "Active"
+                            Name = "Payments"
                         },
                         new
                         {
                             Id = 17,
                             DepartmentId = 3,
-                            Name = "Taxation",
-                            Status = "Active"
+                            Name = "Taxation"
                         },
                         new
                         {
                             Id = 18,
                             DepartmentId = 3,
-                            Name = "Banking",
-                            Status = "Active"
+                            Name = "Banking"
                         },
                         new
                         {
                             Id = 19,
                             DepartmentId = 3,
-                            Name = "Learning and Development",
-                            Status = "Active"
+                            Name = "Learning and Development"
                         },
                         new
                         {
                             Id = 20,
                             DepartmentId = 3,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 21,
                             DepartmentId = 3,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 22,
                             DepartmentId = 4,
-                            Name = "Talent acquisition",
-                            Status = "Active"
+                            Name = "Talent acquisition"
                         },
                         new
                         {
                             Id = 23,
                             DepartmentId = 4,
-                            Name = "HR Administration",
-                            Status = "Active"
+                            Name = "HR Administration"
                         },
                         new
                         {
                             Id = 24,
                             DepartmentId = 4,
-                            Name = "Performance Management, R&R",
-                            Status = "Active"
+                            Name = "Performance Management, R&R"
                         },
                         new
                         {
                             Id = 25,
                             DepartmentId = 4,
-                            Name = "Succession Planning/Leadership Development",
-                            Status = "Active"
+                            Name = "Succession Planning/Leadership Development"
                         },
                         new
                         {
                             Id = 26,
                             DepartmentId = 4,
-                            Name = "Training & Development",
-                            Status = "Active"
+                            Name = "Training & Development"
                         },
                         new
                         {
                             Id = 27,
                             DepartmentId = 4,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 28,
                             DepartmentId = 4,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 29,
                             DepartmentId = 5,
-                            Name = "Hardware/Software procurement",
-                            Status = "Active"
+                            Name = "Hardware/Software procurement"
                         },
                         new
                         {
                             Id = 30,
                             DepartmentId = 5,
-                            Name = "IT Support/troubleshooting",
-                            Status = "Active"
+                            Name = "IT Support/troubleshooting"
                         },
                         new
                         {
                             Id = 31,
                             DepartmentId = 5,
-                            Name = "Network/Server maintenance",
-                            Status = "Active"
+                            Name = "Network/Server maintenance"
                         },
                         new
                         {
                             Id = 32,
                             DepartmentId = 5,
-                            Name = "Digital innovation support",
-                            Status = "Active"
+                            Name = "Digital innovation support"
                         },
                         new
                         {
                             Id = 33,
                             DepartmentId = 5,
-                            Name = "Learning and Development",
-                            Status = "Active"
+                            Name = "Learning and Development"
                         },
                         new
                         {
                             Id = 34,
                             DepartmentId = 5,
-                            Name = "SLA/Policy Compliance",
-                            Status = "Active"
+                            Name = "SLA/Policy Compliance"
                         },
                         new
                         {
                             Id = 35,
                             DepartmentId = 5,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 36,
                             DepartmentId = 6,
-                            Name = "Brand/Corporate Communication",
-                            Status = "Active"
+                            Name = "Brand/Corporate Communication"
                         },
                         new
                         {
                             Id = 37,
                             DepartmentId = 6,
-                            Name = "Marketing Material development",
-                            Status = "Active"
+                            Name = "Marketing Material development"
                         },
                         new
                         {
                             Id = 38,
                             DepartmentId = 6,
-                            Name = "Digital Marketing",
-                            Status = "Active"
+                            Name = "Digital Marketing"
                         },
                         new
                         {
                             Id = 39,
                             DepartmentId = 6,
-                            Name = "Association Membership and networking",
-                            Status = "Active"
+                            Name = "Association Membership and networking"
                         },
                         new
                         {
                             Id = 40,
                             DepartmentId = 6,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 41,
                             DepartmentId = 6,
-                            Name = "Audit/ Compliances",
-                            Status = "Active"
+                            Name = "Audit/ Compliances"
                         },
                         new
                         {
                             Id = 42,
                             DepartmentId = 6,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 43,
                             DepartmentId = 7,
-                            Name = "Contract drafting & Review",
-                            Status = "Active"
+                            Name = "Contract drafting & Review"
                         },
                         new
                         {
                             Id = 44,
                             DepartmentId = 7,
-                            Name = "Handling legal issues and cases",
-                            Status = "Active"
+                            Name = "Handling legal issues and cases"
                         },
                         new
                         {
                             Id = 45,
                             DepartmentId = 7,
-                            Name = "REIT",
-                            Status = "Active"
+                            Name = "REIT"
                         },
                         new
                         {
                             Id = 46,
                             DepartmentId = 7,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 47,
                             DepartmentId = 7,
-                            Name = "Audit/ Compliances",
-                            Status = "Active"
+                            Name = "Audit/ Compliances"
                         },
                         new
                         {
                             Id = 48,
                             DepartmentId = 7,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 49,
                             DepartmentId = 8,
-                            Name = "Hiring/ de-hiring of premises/ Guest Houses",
-                            Status = "Active"
+                            Name = "Hiring/ de-hiring of premises/ Guest Houses"
                         },
                         new
                         {
                             Id = 50,
                             DepartmentId = 8,
-                            Name = "Procurement/Disposal of furniture, fixtures, monthly consumables",
-                            Status = "Active"
+                            Name = "Procurement/Disposal of furniture, fixtures, monthly consumables"
                         },
                         new
                         {
                             Id = 51,
                             DepartmentId = 8,
-                            Name = "Travel Booking",
-                            Status = "Active"
+                            Name = "Travel Booking"
                         },
                         new
                         {
                             Id = 52,
                             DepartmentId = 8,
-                            Name = "Handling office boys, security",
-                            Status = "Active"
+                            Name = "Handling office boys, security"
                         },
                         new
                         {
                             Id = 53,
                             DepartmentId = 8,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 54,
                             DepartmentId = 8,
-                            Name = "Audit/ Compliances",
-                            Status = "Active"
+                            Name = "Audit/ Compliances"
                         },
                         new
                         {
                             Id = 55,
                             DepartmentId = 8,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 56,
                             DepartmentId = 9,
-                            Name = "Secretarial",
-                            Status = "Active"
+                            Name = "Secretarial"
                         },
                         new
                         {
                             Id = 57,
                             DepartmentId = 9,
-                            Name = "Fund Raising",
-                            Status = "Active"
+                            Name = "Fund Raising"
                         },
                         new
                         {
                             Id = 58,
                             DepartmentId = 9,
-                            Name = "Acquisition",
-                            Status = "Active"
+                            Name = "Acquisition"
                         },
                         new
                         {
                             Id = 59,
                             DepartmentId = 9,
-                            Name = "REIT",
-                            Status = "Active"
+                            Name = "REIT"
                         },
                         new
                         {
                             Id = 60,
                             DepartmentId = 9,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 61,
                             DepartmentId = 9,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 62,
                             DepartmentId = 9,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 63,
                             DepartmentId = 10,
-                            Name = "Business Development - Pipeline creation",
-                            Status = "Active"
+                            Name = "Business Development - Pipeline creation"
                         },
                         new
                         {
                             Id = 64,
                             DepartmentId = 10,
-                            Name = "Business Development - Bidding",
-                            Status = "Active"
+                            Name = "Business Development - Bidding"
                         },
                         new
                         {
                             Id = 65,
                             DepartmentId = 10,
-                            Name = "New Product/service development",
-                            Status = "Active"
+                            Name = "New Product/service development"
                         },
                         new
                         {
                             Id = 66,
                             DepartmentId = 10,
-                            Name = "Business Performance support and Analysis",
-                            Status = "Active"
+                            Name = "Business Performance support and Analysis"
                         },
                         new
                         {
                             Id = 67,
                             DepartmentId = 10,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 68,
                             DepartmentId = 10,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 69,
                             DepartmentId = 10,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 70,
                             DepartmentId = 11,
-                            Name = "Business Development - Pipeline creation",
-                            Status = "Active"
+                            Name = "Business Development - Pipeline creation"
                         },
                         new
                         {
                             Id = 71,
                             DepartmentId = 11,
-                            Name = "Business Development - Bidding",
-                            Status = "Active"
+                            Name = "Business Development - Bidding"
                         },
                         new
                         {
                             Id = 72,
                             DepartmentId = 11,
-                            Name = "Project Quality Delivery",
-                            Status = "Active"
+                            Name = "Project Quality Delivery"
                         },
                         new
                         {
                             Id = 73,
                             DepartmentId = 11,
-                            Name = "Project and Business Administration",
-                            Status = "Active"
+                            Name = "Project and Business Administration"
                         },
                         new
                         {
                             Id = 74,
                             DepartmentId = 11,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 75,
                             DepartmentId = 11,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 76,
                             DepartmentId = 11,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 77,
                             DepartmentId = 12,
-                            Name = "Business Development - Pipeline creation",
-                            Status = "Active"
+                            Name = "Business Development - Pipeline creation"
                         },
                         new
                         {
                             Id = 78,
                             DepartmentId = 12,
-                            Name = "Business Development - Bidding",
-                            Status = "Active"
+                            Name = "Business Development - Bidding"
                         },
                         new
                         {
                             Id = 79,
                             DepartmentId = 12,
-                            Name = "Project Quality Delivery",
-                            Status = "Active"
+                            Name = "Project Quality Delivery"
                         },
                         new
                         {
                             Id = 80,
                             DepartmentId = 12,
-                            Name = "Project Commercial success",
-                            Status = "Active"
+                            Name = "Project Commercial success"
                         },
                         new
                         {
                             Id = 81,
                             DepartmentId = 12,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 82,
                             DepartmentId = 12,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 83,
                             DepartmentId = 12,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 84,
                             DepartmentId = 13,
-                            Name = "Business Development - Pipeline creation",
-                            Status = "Active"
+                            Name = "Business Development - Pipeline creation"
                         },
                         new
                         {
                             Id = 85,
                             DepartmentId = 13,
-                            Name = "Business Development - Bidding",
-                            Status = "Active"
+                            Name = "Business Development - Bidding"
                         },
                         new
                         {
                             Id = 86,
                             DepartmentId = 13,
-                            Name = "Bid Quality Delivery",
-                            Status = "Active"
+                            Name = "Bid Quality Delivery"
                         },
                         new
                         {
                             Id = 87,
                             DepartmentId = 13,
-                            Name = "Bid Commercial success",
-                            Status = "Active"
+                            Name = "Bid Commercial success"
                         },
                         new
                         {
                             Id = 88,
                             DepartmentId = 13,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 89,
                             DepartmentId = 13,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 90,
                             DepartmentId = 13,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 91,
                             DepartmentId = 14,
-                            Name = "Business Development - Pipeline creation",
-                            Status = "Active"
+                            Name = "Business Development - Pipeline creation"
                         },
                         new
                         {
                             Id = 92,
                             DepartmentId = 14,
-                            Name = "Business Development - Bidding",
-                            Status = "Active"
+                            Name = "Business Development - Bidding"
                         },
                         new
                         {
                             Id = 93,
                             DepartmentId = 14,
-                            Name = "Project Quality Delivery",
-                            Status = "Active"
+                            Name = "Project Quality Delivery"
                         },
                         new
                         {
                             Id = 94,
                             DepartmentId = 14,
-                            Name = "Project Commercial success",
-                            Status = "Active"
+                            Name = "Project Commercial success"
                         },
                         new
                         {
                             Id = 95,
                             DepartmentId = 14,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 96,
                             DepartmentId = 14,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 97,
                             DepartmentId = 14,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         },
                         new
                         {
                             Id = 98,
                             DepartmentId = 15,
-                            Name = "Learning & Development",
-                            Status = "Active"
+                            Name = "Learning & Development"
                         },
                         new
                         {
                             Id = 99,
                             DepartmentId = 15,
-                            Name = "Audit & Compliances",
-                            Status = "Active"
+                            Name = "Audit & Compliances"
                         },
                         new
                         {
                             Id = 100,
                             DepartmentId = 15,
-                            Name = "Additional",
-                            Status = "Active"
+                            Name = "Additional"
                         });
                 });
 

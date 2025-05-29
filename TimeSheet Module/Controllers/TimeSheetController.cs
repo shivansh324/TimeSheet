@@ -148,7 +148,7 @@ namespace TimeSheet_Module.Controllers
                 SubmissionLog? submissionLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
                 string status = submissionLog != null ? submissionLog.Status : "Open";
 
-                var milestone = _db.Milestones.Where(x => x.DepartmentId == employee.DepartmentId).Include(x => x.Timesheets).ToList();
+                var milestone = _db.Milestones.Where(x => x.Status == "Active").Where(x => x.DepartmentId == employee.DepartmentId).Include(x => x.Timesheets).ToList();
                 var milestoneDtos = milestone
                     .Select(m => _mapper.Map<MilestoneDto>(m, opts =>
                     {

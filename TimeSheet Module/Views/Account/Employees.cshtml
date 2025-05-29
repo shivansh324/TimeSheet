@@ -1,0 +1,129 @@
+﻿@model IEnumerable<TimeSheet.Models.Employee>
+
+@{
+	ViewData["Title"] = "Employees";
+}
+<div class="row">
+	<h1 class="col-7">Employees</h1>
+	<div class="col-5 text-end">
+		<p>
+			<a class="btn btn-primary" asp-action="Register">Create New Employee</a>
+		</p>
+	</div>
+</div>
+<table id="EmployeeTable" class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<th>
+				@Html.DisplayNameFor(model => model.EmployeeCode)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Name)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Email)
+			</th>
+			<th>
+				Department
+			</th>
+			<th>
+				Approver
+			</th>
+			<th>
+				Approver Email
+			</th>
+			<th>
+				Status
+			</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.EmployeeCode)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Name)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Email)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Department.Name)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Approver.Name)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Approver.Email)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Status)
+				</td>
+				<td>
+					<button type="button" class="btn btn-outline-danger" onclick="Delete(@item.Id)"><i class="bi bi-trash-fill"></i> Delete</button>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+@section Scripts {
+	<script>
+		$('#EmployeeTable').DataTable({
+			"pageLength": 25,
+			"order" : [[0, "asc"],[6,"asc"]]
+		});
+		function Delete(id){
+			Swal.fire({
+			  title: "Are you sure?",
+			  text: "You won't be able to revert this!",
+			  icon: "warning",
+			  showDenyButton: true,
+			  showCancelButton: true,
+			  confirmButtonColor: "#d33",
+			  denyButtonColor: "#3085d6",
+			  cancelButtonColor: "#6c757d",
+			  confirmButtonText: "Yes, delete it!",
+			  denyButtonText: `Disable it instead!`,
+			}).then((result) => {
+			  if (result.isConfirmed) {
+				  $.ajax({
+					url: '/Account/DeleteEmp/' + id,
+					data: { status: 1 },
+					type: 'POST',
+					success: function (result) {
+						window.location.reload();
+					},
+					error: function (error) {
+						Swal.fire({
+							icon: "error",
+							title: "Error",
+							text: error.responseJSON.error
+						});
+					}
+				});
+			}else if (result.isDenied) {
+				  $.ajax({
+					url: '/Account/DeleteEmp/' + id,
+					data: { status: 0 },
+					type: 'POST',
+					success: function (result) {
+						window.location.reload();
+					},
+					error: function (error) {
+						Swal.fire({
+							icon: "error",
+							title: "Error",
+							text: error.responseJSON.error
+						});
+					}
+				});
+			}
+			});
+		}
+	</script>
+}
