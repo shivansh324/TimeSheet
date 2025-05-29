@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using TimeSheet.Models;
 using TimeSheet.Models.Dto;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 namespace TimeSheet.Data.Data
@@ -19,8 +18,8 @@ namespace TimeSheet.Data.Data
             CreateMap<Project, ProjectDto>()
                 .ForMember(dest => dest.ProjectMilestones, opt => opt.MapFrom((src, dest, destMember, context) =>
                     src.ProjectMilestones?
-                        .Where(m => m.StartDate <= (DateOnly)context.Items["startDate"]
-                                 && m.EndDate >= (DateOnly)context.Items["endDate"])
+                        .Where(m => m.StartDate <= (DateOnly)context.Items["endDate"])
+                        .Where(m => m.EndDate >= (DateOnly)context.Items["startDate"])
                         .ToList()
                 ));
 
@@ -39,7 +38,9 @@ namespace TimeSheet.Data.Data
                                  && t.Date <= (DateOnly)context.Items["endDate"])
                         .Where(t => t.EmployeeId == (int)context.Items["EmployeeId"])
                         .ToList()
-                ));
+                ))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom((src, dest, destMember, context) =>
+                    context.Items.ContainsKey("Status") ? context.Items["Status"]?.ToString() : "Open"));
 
             CreateMap<Timesheet, TimesheetDto>();
 

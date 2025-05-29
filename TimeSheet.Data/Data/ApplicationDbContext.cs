@@ -13,6 +13,7 @@ namespace TimeSheet.Data.Data
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectMilestone> ProjectMilestones { get; set; }
         public DbSet<Timesheet> Timesheets { get; set; }
+        public DbSet<SubmissionLog> SubmissionLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,7 +33,7 @@ namespace TimeSheet.Data.Data
                 .HasMany(w => w.ProjectMilestones)
                 .WithOne(t => t.Project)
                 .HasForeignKey(t => t.ProjectId);
-            
+
             modelBuilder.Entity<ProjectMilestone>()
                 .HasMany(w => w.Timesheets)
                 .WithOne(t => t.ProjectMilestone)

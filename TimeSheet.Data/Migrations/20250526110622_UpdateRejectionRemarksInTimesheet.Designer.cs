@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimeSheet.Data.Data;
 
@@ -11,9 +12,11 @@ using TimeSheet.Data.Data;
 namespace TimeSheet.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250526110622_UpdateRejectionRemarksInTimesheet")]
+    partial class UpdateRejectionRemarksInTimesheet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -963,41 +966,6 @@ namespace TimeSheet.Data.Migrations
                     b.ToTable("ProjectMilestones");
                 });
 
-            modelBuilder.Entity("TimeSheet.Models.SubmissionLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<long>("Hours")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("RejectionRemarks")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("SubmissionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateOnly>("TimesheetDate")
-                        .HasColumnType("date");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SubmissionLogs");
-                });
-
             modelBuilder.Entity("TimeSheet.Models.Timesheet", b =>
                 {
                     b.Property<int>("Id")
@@ -1053,9 +1021,6 @@ namespace TimeSheet.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<long>("Hours")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("HoursLeft")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");

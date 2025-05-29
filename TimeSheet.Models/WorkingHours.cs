@@ -20,5 +20,6 @@ namespace TimeSheet.Models
         public DateOnly Date { get; set; }
         [Display(Name = "Working Hours")]
         public long Hours { get; set; } = 0;
+        public long HoursLeft { get; set; } = 0;
     }
 }

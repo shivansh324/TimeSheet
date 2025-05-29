@@ -16,5 +16,6 @@ namespace TimeSheet.Models.Dto
         public string? Description { get; set; }
         public int? DepartmentId { get; set; }
         public List<TimesheetDto>? Timesheets { get; set; }
+        public string Status { get; set; }
     }
 }

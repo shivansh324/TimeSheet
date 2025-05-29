@@ -12,6 +12,7 @@ using TimeSheet.Models.Dto;
 using TimeSheet.Models.ViewModel;
 using TimeSheet.Models.API_Models;
 using TimeSheet_Module.Services.Implementations;
+using System.Globalization;
 
 namespace TimeSheet_Module.Controllers
 {
@@ -94,7 +95,8 @@ namespace TimeSheet_Module.Controllers
                 int offset = request.WeekOffset;
                 DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Now, offset));
                 DateOnly endDate = startDate.AddDays(6);
-                List<Timesheet> timesheets = [.. _db.Timesheets.Where(x => x.EmployeeId == id).Where(x => x.ProjectMilestoneId == null || x.ProjectMilestoneId == 0).Where(x => x.Date >= startDate && x.Date <= endDate)];
+                SubmissionLog? submissionLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                string status = submissionLog != null ? submissionLog.Status : "Open";
 
                 var projects = _db.Projects
                                 .Where(p => p.EmployeeId == id)
@@ -119,7 +121,8 @@ namespace TimeSheet_Module.Controllers
                     milestone.AssignedHours,
                     milestone.TotalWorkingHours,
                     milestone.PendingWorkingHours,
-                    milestone.Timesheets
+                    milestone.Timesheets,
+                    status
                 })).ToList();
                 return Json(new
                 {
@@ -142,15 +145,18 @@ namespace TimeSheet_Module.Controllers
                 int offset = request.WeekOffset;
                 DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Now, offset));
                 DateOnly endDate = startDate.AddDays(6);
+                SubmissionLog? submissionLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                string status = submissionLog != null ? submissionLog.Status : "Open";
 
                 var milestone = _db.Milestones.Where(x => x.DepartmentId == employee.DepartmentId).Include(x => x.Timesheets).ToList();
-
-                var milestoneDtos = _mapper.Map<List<MilestoneDto>>(milestone, opts =>
-                {
-                    opts.Items["startDate"] = startDate;
-                    opts.Items["endDate"] = endDate;
-                    opts.Items["EmployeeId"] = id;
-                });
+                var milestoneDtos = milestone
+                    .Select(m => _mapper.Map<MilestoneDto>(m, opts =>
+                    {
+                        opts.Items["startDate"] = startDate;
+                        opts.Items["endDate"] = endDate;
+                        opts.Items["EmployeeId"] = id;
+                        opts.Items["Status"] = status;
+                    })).ToList();
                 return Json(new
                 {
                     data = milestoneDtos
@@ -162,9 +168,8 @@ namespace TimeSheet_Module.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
         [HttpPost]
-        public IActionResult GetWorkingHours([FromBody] DataTableRequest request)
+        public IActionResult GetWorkingHours([FromBody] DataTableRequest request) //Get Working Hours and Week's Status
         {
             try
             {
@@ -173,7 +178,11 @@ namespace TimeSheet_Module.Controllers
                 DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Now, offset));
                 DateOnly endDate = startDate.AddDays(6);
                 List<WorkingHours> workingHours = _db.Employees.Where(x => x.Id == id).Include(x => x.WorkingHours).SelectMany(x => x.WorkingHours.Where(y => y.Date >= startDate && y.Date <= endDate)).ToList();
-                var data = new[] { new { workingHours = workingHours } };
+                List<WorkingHoursInfo> hours = workingHours.Select(x => new WorkingHoursInfo { Hours = x.Hours, Date = x.Date }).ToList();
+                List<WorkingHoursInfo> hoursLeft = workingHours.Select(x => new WorkingHoursInfo { Hours = x.HoursLeft, Date = x.Date }).ToList();
+                SubmissionLog? submissionLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                var data = new[] { new { type = "Total Working Hours",hours = hours, submissionLog = submissionLog },
+                    new {type = "Pending Working Hours", hours = hoursLeft, submissionLog = submissionLog } };
                 return Json(new
                 {
                     data = data
@@ -185,7 +194,6 @@ namespace TimeSheet_Module.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
         [HttpPost]
         public IActionResult SetTimesheet(int MilestoneId, int TimesheetId, string Date, TimeSpan Hours, string Remarks, bool IsBillable, bool IsProject)
         {
@@ -199,6 +207,14 @@ namespace TimeSheet_Module.Controllers
                 if (IsProject)
                 {
                     projectMilestone = _db.Find<ProjectMilestone>(MilestoneId);
+                    if (temp_date < projectMilestone.StartDate)
+                    {
+                        return StatusCode(400, new { error = $"You cannot add timesheet before the starting date of Project's Milestone i.e {projectMilestone.StartDate}" });
+                    }
+                    else if (temp_date > projectMilestone.EndDate)
+                    {
+                        return StatusCode(400, new { error = $"You cannot add timesheet after the end date of Project's Milestone i.e {projectMilestone.EndDate}" });
+                    }
                 }
                 else
                 {
@@ -213,10 +229,14 @@ namespace TimeSheet_Module.Controllers
                 {
                     return StatusCode(404, new { error = "Working Hours not found, please try again later" });
                 }
-                if (timesheet != null && timesheet.Status == "Pending")
+                if (timesheet != null && _db.SubmissionLogs.Any(x => x.EmployeeId == id && x.TimesheetDate == DateOnly.FromDateTime(GetStartOfWeek(DateTime.Parse(Date), 0)) && (x.Status == "Pending" || x.Status == "Approved")))
                 {
                     return StatusCode(400, new { error = "Timesheet already submitted. Can't update it." });
                 }
+                //if (timesheet != null && timesheet.Status == "Pending")
+                //{
+                //    return StatusCode(400, new { error = "Timesheet already submitted. Can't update it." });
+                //}
                 if (projectMilestone != null && Hours.Ticks >= projectMilestone.PendingWorkingHours)
                 {
                     return StatusCode(400, new { error = "You cannot add more than Pending working hours" });
@@ -225,11 +245,11 @@ namespace TimeSheet_Module.Controllers
                 if (timesheet != null)
                 {
                     long temp_hours = timesheet.Hours;
-                    if (Hours.Ticks > workingHours.Hours + temp_hours)
+                    if (Hours.Ticks > workingHours.HoursLeft + temp_hours)
                     {
                         return StatusCode(400, new { error = "You cannot add more than Actual working hours" });
                     }
-                    workingHours.Hours -= (Hours.Ticks - temp_hours);
+                    workingHours.HoursLeft -= (Hours.Ticks - temp_hours);
                     timesheet.Hours = Hours.Ticks;
                     timesheet.Remarks = Remarks;
                     timesheet.IsBillable = IsBillable;
@@ -257,8 +277,7 @@ namespace TimeSheet_Module.Controllers
                         Date = DateOnly.Parse(Date),
                         Hours = Hours.Ticks,
                         Remarks = Remarks,
-                        IsBillable = IsBillable,
-                        Status = "Open"
+                        IsBillable = IsBillable
                     };
                     if (projectMilestone != null)
                     {
@@ -267,7 +286,7 @@ namespace TimeSheet_Module.Controllers
                         _db.ProjectMilestones.Update(projectMilestone);
                     }
                     _db.Timesheets.Add(newTimesheet);
-                    workingHours.Hours -= Hours.Ticks;
+                    workingHours.HoursLeft -= Hours.Ticks;
                     _db.WorkingHours.Update(workingHours);
                     _db.SaveChanges();
                 }
@@ -278,6 +297,60 @@ namespace TimeSheet_Module.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+        [HttpPost]
+        public IActionResult Submit(string date)
+        {
+            try
+            {
+                int id = int.Parse(User?.FindFirst(ClaimTypes.Name).Value);//Employee ID
+                DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Parse(date), 0));
+                long sum = _db.Employees.Where(x => x.Id == id).Include(x => x.WorkingHours)
+                    .SelectMany(x => x.WorkingHours)
+                    .Where(y => y.Date >= startDate && y.Date <= startDate.AddDays(6))
+                    .Sum(y => y.HoursLeft);
+                if (sum != 0)
+                {
+                    return StatusCode(400, new { error = "You have unallocated working hours, please allocate them first." });
+                }
+                long totalHours = _db.Timesheets.Where(x => x.EmployeeId == id && x.Date >= startDate && x.Date <= startDate.AddDays(6)).Sum(x => x.Hours);
+                if (_db.SubmissionLogs.Any(x => x.EmployeeId == id && x.TimesheetDate == startDate && (x.Status == "Pending" || x.Status == "Approved")))
+                {
+                    return StatusCode(400, new { error = "Timesheet already submitted for this week." });
+                }
+                SubmissionLog? existingLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                if (existingLog != null)
+                {
+                    existingLog.Hours = totalHours;
+                    existingLog.Status = "Pending";
+                    _db.SubmissionLogs.Update(existingLog);
+                    _db.SaveChanges();
+                    return Ok();
+                }
+                else
+                {
+                    SubmissionLog submissionLog = new SubmissionLog
+                    {
+                        EmployeeId = id,
+                        TimesheetDate = startDate,
+                        Hours = totalHours,
+                        Status = "Pending"
+                    };
+                    _db.SubmissionLogs.Add(submissionLog);
+                    _db.SaveChanges();
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, new { error = "Internal server error" });
+            }
+        }
         #endregion
+    }
+    internal class WorkingHoursInfo
+    {
+        public long Hours { get; set; }
+        public DateOnly Date { get; set; }
     }
 }

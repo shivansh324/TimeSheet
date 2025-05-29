@@ -11,8 +11,7 @@ namespace TimeSheet.Models.API_Models
         public int Code { get; set; }
         public string? Message { get; set; }
         public string? EmployeesCount { get; set; }
-        public string? TotalEmployeeCount { get; set; }
-        public List<EmployeeZing>? EmployeesList { get; set; }
+        public List<EmployeeZing> Employees { get; set; }
     }
 
     public class EmployeeZing
@@ -21,6 +20,12 @@ namespace TimeSheet.Models.API_Models
         public string? EmployeeID { get; set; }
         public string? EmployeeName { get; set; }
         public string? Email { get; set; }
-        public string? RoleName { get; set; }
+        //public Approver? ApproverDetails { get; set; }
     }
+
+    //public class Approver
+    //{
+    //    public string? ApproverName { get; set; }
+    //    public string? ApproverEmployeeCode { get; set; }
+    //}
 }

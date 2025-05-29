@@ -41,9 +41,6 @@ namespace TimeSheet.Models
         [Display(Name = "Pending Working Hours")] //Total Hours Pending in Ticks
         public long PendingWorkingHours { get; set; } = 0;
 
-        [Display(Name = "Rejection Remarks")]
-        public string? RejectionRemarks { get; set; }
-
         [Display(Name = "Milestone Start Date")]
         public DateOnly StartDate { get; set; }
 

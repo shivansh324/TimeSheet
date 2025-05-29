@@ -24,7 +24,7 @@
 						<i class="bi bi-list text-secondary"></i>
 					</button>
 					<a class="navbar-brand text-secondary" asp-action="Index" asp-controller="Home">
-						<img src="~/VTS.png" class="img-fluid" alt="Responsive image" width="50px">
+						<img src="~/VTS.png" class="img-fluid" alt="Responsive image" width="50px"> <span class="h3 fst-italic">Timesheet</span>
 					</a>
 					<div class="ms-auto d-flex align-items-center">
 						<span class="text-secondary me-3">Welcome @User.FindFirst(ClaimTypes.NameIdentifier)?.Value</span>
@@ -46,10 +46,10 @@
 				<a asp-controller="TimeSheet" asp-action="Index">TimeSheet</a>
 				<a href="#">Link 2</a>
 				<div class="dropdown">
-					<a class="dropdown-toggle" data-bs-toggle="collapse" href="#subLinks">Dropdown Link</a>
+					<a class="dropdown-toggle" data-bs-toggle="collapse" href="#subLinks">Admin</a>
 					<div class="collapse" id="subLinks">
-						<a href="#" class="ps-4">Sub Link 2</a>
-						<a href="#" class="ps-4">Sub Link 3</a>
+						<a asp-controller="Admin" asp-action="Index" class="ps-4">Department</a>
+						<a href="#" class="ps-4">Non-Tech Milestones</a>
 					</div>
 				</div>
 			</div>
@@ -89,6 +89,7 @@
 		</footer>
 	}
 	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	@* <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> *@
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="/lib/datatables/js/datatables.min.js"></script>
 	<script src="/lib/sweetalert2/js/sweetalert2.min.js"></script>

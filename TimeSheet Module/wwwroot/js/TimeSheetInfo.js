@@ -9,6 +9,7 @@ var thursday;
 var friday;
 var saturday;
 var sunday;
+var currentStatus = "Open";
 function ticksToTimespan(ticks) {
     const ticksPerMillisecond = 10000;
     const ms = ticks / ticksPerMillisecond;
@@ -19,7 +20,18 @@ function ticksToTimespan(ticks) {
 
     return `${hours}h ${minutes}m`;
 }
-
+function safeJSString(str) {
+    return encodeURIComponent(str || '').replace(/'/g, "\\'");
+}
+function escapeHTML(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\n/g, '<br/>'); // Optional: convert newlines to <br/>
+}
 const updateWeekRange = () => {
     const today = new Date();
     monday = new Date(today.setDate(today.getDate() - today.getDay() + 1 + currentWeekOffset * 7));
@@ -41,6 +53,7 @@ const updateWeekRange = () => {
     $(".SunWeekDay").html("Sun " + formatDate(sunday));
 };
 function WeekModal(date, id, hours, remarks, IsBillable, project, timesheetId) {
+    remarks = decodeURIComponent(remarks || '');
     $("#IsBillable").val("true");
     $("#IsProject").val(project);
     $("#MilestoneId").val(id);
@@ -59,7 +72,10 @@ function WeekModal(date, id, hours, remarks, IsBillable, project, timesheetId) {
     }
     modal.show();
 }
-
+function ToolTip() {
+    var tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    var tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, { html: true }))
+}
 function getDayOfWeek(dateStr) {//Return the day of the week from date string
     const date = new Date(dateStr);
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -70,23 +86,109 @@ function getWorkingHoursForDay(workingHours, day) {
     const entry = workingHours.find(wh => getDayOfWeek(wh.date) === day);
     return entry ? ticksToTimespan(entry.hours) : '-';
 }
-function getHoursForDay(timesheets, day, id, date, project) {
+
+function getHoursForDay(timesheets, day, id, date, project, status = "Open") {
     if (!timesheets || !Array.isArray(timesheets)) return '-';
     const entry = timesheets.find(ts => getDayOfWeek(ts.date) === day);
-    if (entry) {
-        return `<button class="btn btn-sm btn-light day-btn btn-outline-secondary text-dark"
-                 onClick="WeekModal('${entry.date}',${id},'${entry.hours}','${entry.remarks}',${entry.isBillable}, ${project}, ${entry.id})">
+    if (status === "Pending" || status === "Approved") {
+        var remarks = entry ? escapeHTML(entry.remarks) : '';
+        var isBillable = entry ? escapeHTML(entry.isBillable.toString()) : '-';
+
+        return `<p data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="Billable: ${isBillable} <br/>Remarks: ${remarks}">${entry ? entry.hours : '-'}</p>`;
+    } else {
+        if (entry) {
+            return `<button class="btn btn-sm btn-light day-btn timesheet-btn"
+                 onClick="WeekModal('${entry.date}',${id},'${entry.hours}','${safeJSString(entry.remarks)}',${entry.isBillable}, ${project}, ${entry.id})">
                      ${entry ? entry.hours : '-'}
                   </button>`;
-    } else {
-        return `<button class="btn btn-sm btn-light day-btn btn-outline-secondary text-dark"
-                 onClick="WeekModal('${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}',${id},0,null,true,${project},0)">-</button>`;
+        } else {
+            return `<button class="btn btn-sm btn-light day-btn timesheet-btn"
+                 onClick="WeekModal('${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}',${id},0,null,true,${project},0)">-</button>`;
+        }
     }
-
 }
 
-$(document).ready(function () {
-    projectDataTable = $('#projectTable').DataTable({
+$(document).ready(async function () {
+    workingHoursDataTable = await $('#wokingHoursTable').DataTable({
+        paging: false,
+        info: false,
+        searching: false,
+        ordering: false,
+        responsive: true,
+        serverSide: true,
+        processing: true,
+        ajax: {
+            url: '/TimeSheet/GetWorkingHours',
+            contentType: "application/json",
+            type: 'POST',
+            data: function (d) {
+                d.weekOffset = currentWeekOffset;
+                return JSON.stringify(d);
+            }
+        },
+        "columns": [
+            {
+                data: null,
+                render: function (data) {
+                    const status = data.submissionLog?.status || "Open";
+                    let hours = data.submissionLog?.hours || "-";
+                    if (hours !== "-") {
+                        hours = ticksToTimespan(hours);
+                    }
+                    currentStatus = status;
+                    $("#Status").val(status);
+                    $("#WorkingHours").val(hours);
+                    return data.type;
+                }
+            },
+            { data: null, render: data => getWorkingHoursForDay(data.hours, 'Mon') },
+            { data: null, render: data => getWorkingHoursForDay(data.hours, 'Tue') },
+            { data: null, render: data => getWorkingHoursForDay(data.hours, 'Wed') },
+            { data: null, render: data => getWorkingHoursForDay(data.hours, 'Thu') },
+            { data: null, render: data => getWorkingHoursForDay(data.hours, 'Fri') },
+            { data: null, render: data => getWorkingHoursForDay(data.hours, 'Sat') },
+            { data: null, render: data => getWorkingHoursForDay(data.hours, 'Sun') }
+        ],
+        drawCallback: await function () {
+            if (currentStatus === "Approved" || currentStatus === "Pending") {
+                $("#SubmitBtn").addClass("disabled").hide();
+            } else {
+                $("#SubmitBtn").removeClass("disabled").show();
+            }
+        }
+    });
+    milestoneDataTable = await $('#milestoneTable').DataTable({
+        paging: false,
+        info: false,
+        searching: false,
+        ordering: false,
+        responsive: true,
+        serverSide: true,
+        processing: true,
+        ajax: {
+            url: '/TimeSheet/GetTimesheet',
+            contentType: "application/json",
+            type: 'POST',
+            data: function (d) {
+                d.weekOffset = currentWeekOffset;
+                return JSON.stringify(d);
+            }
+        },
+        "columns": [
+            { data: 'name' },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday, false, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday, false, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday, false, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday, false, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday, false, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday, false, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday, false, data.status) }
+        ],
+        drawCallback: await function () {
+            ToolTip();
+        }
+    });
+    projectDataTable = await $('#projectTable').DataTable({
         paging: false,
         info: false,
         searching: false,
@@ -111,72 +213,19 @@ $(document).ready(function () {
             { data: 'taskCode' },
             { data: 'taskDescription' },
             { data: 'assignedHours', render: data => ticksToTimespan(data) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday, true) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday, true) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday, true) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday, true) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday, true) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday, true) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday, true) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday, true, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday, true, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday, true, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday, true, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday, true, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday, true, data.status) },
+            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday, true, data.status) },
             { data: 'totalWorkingHours', render: data => ticksToTimespan(data) },
             { data: 'pendingWorkingHours', render: data => ticksToTimespan(data) }
-        ]
-    });
-    milestoneDataTable = $('#milestoneTable').DataTable({
-        paging: false,
-        info: false,
-        searching: false,
-        ordering: false,
-        responsive: true,
-        serverSide: true,
-        processing: true,
-        ajax: {
-            url: '/TimeSheet/GetTimesheet',
-            contentType: "application/json",
-            type: 'POST',
-            data: function (d) {
-                d.weekOffset = currentWeekOffset;
-                return JSON.stringify(d);
-            }
-        },
-        "columns": [
-            { data: 'name' },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Mon', data.id, monday, false) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Tue', data.id, tuesday, false) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Wed', data.id, wednesday, false) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Thu', data.id, thursday, false) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Fri', data.id, friday, false) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sat', data.id, saturday, false) },
-            { data: null, render: data => getHoursForDay(data.timesheets, 'Sun', data.id, sunday, false) }
-        ]
-    });
-    workingHoursDataTable = $('#wokingHoursTable').DataTable({
-        paging: false,
-        info: false,
-        searching: false,
-        ordering: false,
-        responsive: true,
-        serverSide: true,
-        processing: true,
-        ajax: {
-            url: '/TimeSheet/GetWorkingHours',
-            contentType: "application/json",
-            type: 'POST',
-            data: function (d) {
-                d.weekOffset = currentWeekOffset;
-                return JSON.stringify(d);
-            }
-        },
-        "columns": [
-            { data: null, render: data => 'Working Hours' },
-            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Mon') },
-            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Tue') },
-            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Wed') },
-            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Thu') },
-            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Fri') },
-            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Sat') },
-            { data: null, render: data => getWorkingHoursForDay(data.workingHours, 'Sun') }
-        ]
+        ],
+        drawCallback: await function () {
+            ToolTip();
+        }
     });
     updateWeekRange();
 });
@@ -200,18 +249,6 @@ $('#nextWeek').on('click', function () {
 
 // Modal Logic
 let modal = new bootstrap.Modal(document.getElementById('entryModal'));
-
-
-
-
-//$(document).on('click', '.day-btn', function () {
-//	$('#targetBtn').val(this.id = this.id || Date.now()); // Assign unique id
-//	$(this).attr('id', $('#targetBtn').val()); // Set if not set
-//	$('#entryModal').data('btn', this.id);
-//	$('#hoursInput').val('');
-//	$('#remarkInput').val('');
-//	modal.show();
-//});
 
 $('#weekForm').on('submit', function (e) {
     e.preventDefault();
