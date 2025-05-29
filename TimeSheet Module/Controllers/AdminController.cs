@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -10,130 +11,114 @@ using TimeSheet.Models;
 
 namespace TimeSheet_Module.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController(ApplicationDbContext db) : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _db = db;
 
-        public AdminController(ApplicationDbContext context)
+        public async Task<IActionResult> Department()
         {
-            _context = context;
+            return View(await _db.Departments.ToListAsync());
         }
 
-        // GET: Admin
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Milestone()
         {
-            return View(await _context.Departments.ToListAsync());
+            ViewBag.Departments = await _db.Departments.OrderBy(x=>x.Name).ToListAsync();
+            return View(await _db.Milestones.Include(x=>x.Department).ToListAsync());
         }
+        
+        
 
-        // GET: Admin/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Admin/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Department department)
+        public async Task<IActionResult> Department(int Id, string Name)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(department);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(department);
-        }
-
-        // GET: Admin/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var department = await _context.Departments.FindAsync(id);
-            if (department == null)
-            {
-                return NotFound();
-            }
-            return View(department);
-        }
-
-        // POST: Admin/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Department department)
-        {
-            if (id != department.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                if (Id != 0)
                 {
-                    _context.Update(department);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!DepartmentExists(department.Id))
+                    Department? department = await _db.Departments.FindAsync(Id);
+                    if (department == null)
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+                    department.Name = Name;
+                    _db.Departments.Update(department);
                 }
-                return RedirectToAction(nameof(Index));
+                else
+                {
+                    Department department = new Department
+                    {
+                        Name = Name
+                    };
+                    _db.Departments.Add(department);
+                }
+                await _db.SaveChangesAsync();
+                TempData["success"] = "Department saved successfully";
+                return RedirectToAction(nameof(Department));
             }
-            return View(department);
+            return View(nameof(Department));
         }
 
-        // GET: Admin/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteDepartment(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var department = await _context.Departments
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (department == null)
-            {
-                return NotFound();
-            }
-
-            return View(department);
-        }
-
-        // POST: Admin/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var department = await _context.Departments.FindAsync(id);
+            var department = await _db.Departments.FindAsync(id);
             if (department != null)
             {
-                _context.Departments.Remove(department);
+                _db.Departments.Remove(department);
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            await _db.SaveChangesAsync();
+            TempData["success"] = "Department deleted successfully";
+            return Ok();
         }
 
-        private bool DepartmentExists(int id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Milestone(int? Id,string Name, int DepartmentId)
         {
-            return _context.Departments.Any(e => e.Id == id);
+            if (ModelState.IsValid)
+            {
+                if (Id != 0)
+                {
+                    Milestone? milestone = await _db.Milestones.FindAsync(Id);
+                    if (milestone == null)
+                    {
+                        return NotFound();
+                    }
+                    milestone.Name = Name;
+                    milestone.DepartmentId = DepartmentId;
+                    _db.Milestones.Update(milestone);
+                }
+                else
+                {
+                    Milestone milestone = new Milestone
+                    {
+                        Name = Name,
+                        DepartmentId = DepartmentId
+                    };
+                    _db.Milestones.Add(milestone);
+                }
+                await _db.SaveChangesAsync();
+                TempData["success"] = "Milestone saved successfully";
+                return RedirectToAction(nameof(Milestone));
+            }
+            return RedirectToAction(nameof(Milestone));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteMilestone(int id)
+        {
+            var milestone = await _db.Milestones.FindAsync(id);
+            if (milestone != null)
+            {
+                _db.Milestones.Remove(milestone);
+            }
+
+            await _db.SaveChangesAsync();
+            TempData["success"] = "Milestone deleted successfully";
+            return Ok();
         }
     }
 }
