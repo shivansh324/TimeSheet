@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimeSheet.Data.Data;
 
@@ -11,9 +12,11 @@ using TimeSheet.Data.Data;
 namespace TimeSheet.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250529194044_AddEmpNavPropInSubmissionLog")]
+    partial class AddEmpNavPropInSubmissionLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -982,17 +985,11 @@ namespace TimeSheet.Data.Migrations
                     b.Property<DateTime?>("ApprovedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("ApproverId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("EmployeeId")
                         .HasColumnType("int");
 
                     b.Property<long>("Hours")
                         .HasColumnType("bigint");
-
-                    b.Property<bool>("IsClosed")
-                        .HasColumnType("bit");
 
                     b.Property<string>("RejectionRemarks")
                         .HasColumnType("nvarchar(max)");
@@ -1008,8 +1005,6 @@ namespace TimeSheet.Data.Migrations
                         .HasColumnType("date");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ApproverId");
 
                     b.HasIndex("EmployeeId");
 
@@ -1131,15 +1126,9 @@ namespace TimeSheet.Data.Migrations
 
             modelBuilder.Entity("TimeSheet.Models.SubmissionLog", b =>
                 {
-                    b.HasOne("TimeSheet.Models.Employee", "Approver")
-                        .WithMany()
-                        .HasForeignKey("ApproverId");
-
                     b.HasOne("TimeSheet.Models.Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId");
-
-                    b.Navigation("Approver");
 
                     b.Navigation("Employee");
                 });

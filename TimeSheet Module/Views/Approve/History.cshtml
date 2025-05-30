@@ -1,0 +1,97 @@
+﻿@model IEnumerable<TimeSheet.Models.SubmissionLog>
+
+@{
+	ViewData["Title"] = "SubmissionLog";
+}
+
+<h1>Timesheet History</h1>
+
+<table id="submissionLogTable" class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<th>
+				Employee Code
+			</th>
+			<th>
+				Employee Name
+			</th>
+			<th>
+				Timesheet From
+			</th>
+			<th>
+				Timesheet To
+			</th>
+			<th>
+				Hours
+			</th>
+			<th>
+				Status
+			</th>
+			<th>
+				Approver Code
+			</th>
+			<th>
+				Approver Name
+			</th>
+			<th>
+				Approval Date
+			</th>
+			<th>
+				Rejection Remarks
+			</th>
+			<th>
+				Action
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@item.Employee?.EmployeeCode
+				</td>
+				<td>
+					@item.Employee?.Name
+				</td>
+				<td>
+					@item.TimesheetDate.ToString("yyyy/MM/dd")
+				</td>
+				<td>
+					@item.TimesheetDate.AddDays(6).ToString("yyyy/MM/dd")
+				</td>
+				<td>
+					@TimeSpan.FromTicks(item.Hours).TotalHours
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Status)
+				</td>
+				<td>
+					@item.Approver?.EmployeeCode
+				</td>
+				<td>
+					@item.Approver?.Name
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.ApprovedDate)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.RejectionRemarks)
+				</td>
+				<td>
+					@if (item.Status != "Rejected" || (item.Status == "Rejected" && item.IsClosed == false))
+					{
+						<a class="btn text-primary" asp-action="Info" asp-route-id="@item.Id"><i class="bi bi-info-square w-100 h-100"></i></a>
+					}
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+<a asp-action="Index" asp-controller="Home" class="btn btn-secondary mx-2">Back</a>
+
+@section Scripts {
+	<script>
+		$("#submissionLogTable").DataTable();
+	</script>
+}

@@ -1,26 +1,26 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TimeSheet.Data.Data;
 using TimeSheet.Models;
+using TimeSheet.Models.API_Models;
 using TimeSheet.Models.Dto;
 using TimeSheet.Models.ViewModel;
-using TimeSheet.Models.API_Models;
-using TimeSheet_Module.Services.Implementations;
-using System.Globalization;
 
 namespace TimeSheet_Module.Controllers
 {
     [Authorize]
-    public class TimeSheetController(ApplicationDbContext db, PostData postData, IMapper mapper) : Controller
+    public class TimeSheetController(ApplicationDbContext db, IMapper mapper) : Controller
     {
         private readonly ApplicationDbContext _db = db;
-        private readonly PostData _postData = postData;
         private readonly IMapper _mapper = mapper;
 
         #region Static Methods
@@ -32,8 +32,9 @@ namespace TimeSheet_Module.Controllers
         }
         #endregion
 
-        public IActionResult Index()
+        public IActionResult Index(int offset = 0)
         {
+            ViewBag.Offset = offset;
             return View();
         }
 
@@ -95,7 +96,7 @@ namespace TimeSheet_Module.Controllers
                 int offset = request.WeekOffset;
                 DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Now, offset));
                 DateOnly endDate = startDate.AddDays(6);
-                SubmissionLog? submissionLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                SubmissionLog? submissionLog = _db.SubmissionLogs.Where(x => x.EmployeeId == id && x.TimesheetDate == startDate).OrderByDescending(x => x.SubmissionDate).FirstOrDefault();
                 string status = submissionLog != null ? submissionLog.Status : "Open";
 
                 var projects = _db.Projects
@@ -145,7 +146,7 @@ namespace TimeSheet_Module.Controllers
                 int offset = request.WeekOffset;
                 DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Now, offset));
                 DateOnly endDate = startDate.AddDays(6);
-                SubmissionLog? submissionLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                SubmissionLog? submissionLog = _db.SubmissionLogs.Where(x => x.EmployeeId == id && x.TimesheetDate == startDate).OrderByDescending(x => x.SubmissionDate).FirstOrDefault();
                 string status = submissionLog != null ? submissionLog.Status : "Open";
 
                 var milestone = _db.Milestones.Where(x => x.Status == "Active").Where(x => x.DepartmentId == employee.DepartmentId).Include(x => x.Timesheets).ToList();
@@ -180,7 +181,7 @@ namespace TimeSheet_Module.Controllers
                 List<WorkingHours> workingHours = _db.Employees.Where(x => x.Id == id).Include(x => x.WorkingHours).SelectMany(x => x.WorkingHours.Where(y => y.Date >= startDate && y.Date <= endDate)).ToList();
                 List<WorkingHoursInfo> hours = workingHours.Select(x => new WorkingHoursInfo { Hours = x.Hours, Date = x.Date }).ToList();
                 List<WorkingHoursInfo> hoursLeft = workingHours.Select(x => new WorkingHoursInfo { Hours = x.HoursLeft, Date = x.Date }).ToList();
-                SubmissionLog? submissionLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                SubmissionLog? submissionLog = _db.SubmissionLogs.Where(x => x.EmployeeId == id && x.TimesheetDate == startDate).OrderByDescending(x => x.SubmissionDate).FirstOrDefault();
                 var data = new[] { new { type = "Total Working Hours",hours = hours, submissionLog = submissionLog },
                     new {type = "Pending Working Hours", hours = hoursLeft, submissionLog = submissionLog } };
                 return Json(new
@@ -304,6 +305,10 @@ namespace TimeSheet_Module.Controllers
             {
                 int id = int.Parse(User?.FindFirst(ClaimTypes.Name).Value);//Employee ID
                 DateOnly startDate = DateOnly.FromDateTime(GetStartOfWeek(DateTime.Parse(date), 0));
+                if (startDate > DateOnly.FromDateTime(DateTime.Now))
+                {
+                    return StatusCode(400, new { error = "You cannot submit timesheet for future dates." });
+                }
                 long sum = _db.Employees.Where(x => x.Id == id).Include(x => x.WorkingHours)
                     .SelectMany(x => x.WorkingHours)
                     .Where(y => y.Date >= startDate && y.Date <= startDate.AddDays(6))
@@ -317,27 +322,22 @@ namespace TimeSheet_Module.Controllers
                 {
                     return StatusCode(400, new { error = "Timesheet already submitted for this week." });
                 }
-                SubmissionLog? existingLog = _db.SubmissionLogs.FirstOrDefault(x => x.EmployeeId == id && x.TimesheetDate == startDate);
+                SubmissionLog? existingLog = _db.SubmissionLogs.Where(x => x.EmployeeId == id && x.TimesheetDate == startDate).OrderByDescending(x => x.SubmissionDate).FirstOrDefault();
                 if (existingLog != null)
                 {
-                    existingLog.Hours = totalHours;
-                    existingLog.Status = "Pending";
+                    existingLog.IsClosed = true;
                     _db.SubmissionLogs.Update(existingLog);
                     _db.SaveChanges();
-                    return Ok();
                 }
-                else
+                SubmissionLog submissionLog = new SubmissionLog
                 {
-                    SubmissionLog submissionLog = new SubmissionLog
-                    {
-                        EmployeeId = id,
-                        TimesheetDate = startDate,
-                        Hours = totalHours,
-                        Status = "Pending"
-                    };
-                    _db.SubmissionLogs.Add(submissionLog);
-                    _db.SaveChanges();
-                }
+                    EmployeeId = id,
+                    TimesheetDate = startDate,
+                    Hours = totalHours,
+                    Status = "Pending"
+                };
+                _db.SubmissionLogs.Add(submissionLog);
+                _db.SaveChanges();
                 return Ok();
             }
             catch (Exception ex)
@@ -347,10 +347,5 @@ namespace TimeSheet_Module.Controllers
             }
         }
         #endregion
-    }
-    internal class WorkingHoursInfo
-    {
-        public long Hours { get; set; }
-        public DateOnly Date { get; set; }
     }
 }

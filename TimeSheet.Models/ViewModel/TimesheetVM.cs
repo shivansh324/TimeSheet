@@ -9,8 +9,9 @@ namespace TimeSheet.Models.ViewModel
 {
     public class TimesheetVM
     {
+        public Employee Employee { get; set; }
+        public List<Milestone> Milestones { get; set; } = [];
         public List<Timesheet> Timesheets { get; set; } = [];
-
-        public List<ProjectDto> Projects { get; set; } = [];
+        public List<ProjectMilestone> Projects { get; set; } = [];
     }
 }

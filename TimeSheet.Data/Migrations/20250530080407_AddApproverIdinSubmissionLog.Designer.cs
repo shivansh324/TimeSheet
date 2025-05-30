@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimeSheet.Data.Data;
 
@@ -11,9 +12,11 @@ using TimeSheet.Data.Data;
 namespace TimeSheet.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250530080407_AddApproverIdinSubmissionLog")]
+    partial class AddApproverIdinSubmissionLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -990,9 +993,6 @@ namespace TimeSheet.Data.Migrations
 
                     b.Property<long>("Hours")
                         .HasColumnType("bigint");
-
-                    b.Property<bool>("IsClosed")
-                        .HasColumnType("bit");
 
                     b.Property<string>("RejectionRemarks")
                         .HasColumnType("nvarchar(max)");

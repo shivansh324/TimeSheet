@@ -1,0 +1,138 @@
+﻿<style>
+	.day-btn:hover {
+		background-color: lightgray;
+	}
+</style>
+<div class="bg-primary text-white mb-3 p-3 rounded">
+	<div class="row">
+		<div class="col-6">
+			<h6 class="card-title timesheet-title">Employee Code: @ViewBag.Employee.EmployeeCode</h6>
+			<h6 class="card-title timesheet-title">Employee Name: @ViewBag.Employee.Name</h6>
+			<h6 class="card-title timesheet-title">Status: @ViewBag.SubmissionLog.Status</h6>
+			<h6 class="card-title timesheet-title">Total Working Hours: @TimeSpan.FromTicks(ViewBag.SubmissionLog.Hours) </h6>
+			<h6 class="card-title timesheet-title">Rejection Remarks: @ViewBag.SubmissionLog.RejectionRemarks </h6>
+		</div>
+		@if (ViewBag.SubmissionLog.Status == "Pending" && ViewBag.Employee.Id != int.Parse(User?.FindFirst(ClaimTypes.Name).Value))
+		{
+			<div class="col-6 text-end">
+				<button class="btn btn-success p-2 px-3" data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>
+			</div>
+		}
+		@if (ViewBag.SubmissionLog.Status == "Rejected" && ViewBag.Employee.Id == int.Parse(User?.FindFirst(ClaimTypes.Name).Value) && ViewBag.SubmissionLog.IsClosed == false)
+		{
+			<div class="col-6 text-end">
+				<a asp-action="Index" asp-controller="Timesheet" asp-route-offset=@ViewBag.Offset class="btn btn-success p-2 px-3">Edit</a>
+			</div>
+		}
+	</div>
+</div>
+
+<!-- DataTable -->
+<div class="table-responsive">
+	<table id="wokingHoursTable" class="table table-bordered">
+		<thead class="text-light" style="background-color: #ff9800;">
+			<tr class="text-nowrap">
+				<th class="w-50">Working Hours</th>
+				<th class="MonWeekDay">Mon </th>
+				<th class="TueWeekDay">Tue </th>
+				<th class="WedWeekDay">Wed </th>
+				<th class="ThuWeekDay">Thu </th>
+				<th class="FriWeekDay">Fri </th>
+				<th class="SatWeekDay">Sat </th>
+				<th class="SunWeekDay">Sun </th>
+			</tr>
+		</thead>
+	</table>
+</div>
+<div class="table-responsive">
+	<table id="milestoneTable" class="table table-bordered">
+		<thead class="text-light" style="background-color: #ff9800;">
+			<tr class="text-nowrap">
+				<th class="w-50">Milestone</th>
+				<th class="MonWeekDay">Mon </th>
+				<th class="TueWeekDay">Tue </th>
+				<th class="WedWeekDay">Wed </th>
+				<th class="ThuWeekDay">Thu </th>
+				<th class="FriWeekDay">Fri </th>
+				<th class="SatWeekDay">Sat </th>
+				<th class="SunWeekDay">Sun </th>
+			</tr>
+		</thead>
+	</table>
+</div>
+<div class="table-responsive">
+	<table id="projectTable" class="table table-bordered w-100">
+		<thead class="text-light" style="background-color: #ff9800;">
+			<tr class="text-nowrap">
+				<th>Project Code</th>
+				<th>Project Description</th>
+				<th>Milestone Code</th>
+				<th>Milestone Description</th>
+				<th>Task Code</th>
+				<th>Task Description</th>
+				<th>Assigned Hours</th>
+				<th class="MonWeekDay">Mon </th>
+				<th class="TueWeekDay">Tue </th>
+				<th class="WedWeekDay">Wed </th>
+				<th class="ThuWeekDay">Thu </th>
+				<th class="FriWeekDay">Fri </th>
+				<th class="SatWeekDay">Sat </th>
+				<th class="SunWeekDay">Sun </th>
+				<th>Total Hours</th>
+				<th>Pending Hours</th>
+			</tr>
+		</thead>
+	</table>
+</div>
+<button onClick="window.history.back()" class="btn btn-secondary m-3">Back</button>
+
+<!--Modal-->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="approveModalLabel">Approve Request</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<form id="Approve_Form">
+				<input id="Approver_Id" name="Id" value="@ViewBag.SubmissionLog.Id" hidden />
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-4 form-label">
+							Approval Status :
+						</div>
+						<div class="col-8">
+							<input class="form-check-input" type="radio" id="Approved" name="Approval" value="Approved" />
+							<label class="form-check-label" for="Approved">Approve</label>
+							<input class="form-check-input" type="radio" id="Rejected" name="Approval" value="Rejected" />
+							<label class="form-check-label" for="Rejected">Reject</label>
+						</div>
+					</div>
+					<br />
+					<div class="row">
+						<div class="col-4 form-label">
+							Remarks :
+						</div>
+						<div class="col-8">
+							<textarea id="Rejection_Remarks" name="remarks" class="form-control Rejection_Remarks" disabled></textarea>
+							<span class="error-msg text-danger"></span>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Update Changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+@section Scripts {
+	@{
+		<partial name="_ValidationScriptsPartial" />
+	}
+	<script>
+		var id = @ViewBag.SubmissionLog.Id;
+	</script>
+	<script src="~/js/TimeSheetApprove.js"></script>
+}

@@ -1,5 +1,4 @@
-﻿let currentWeekOffset = 0;
-var projectDataTable;
+﻿var projectDataTable;
 var milestoneDataTable;
 var workingHoursDataTable;
 var monday;
@@ -132,12 +131,14 @@ $(document).ready(async function () {
                 render: function (data) {
                     const status = data.submissionLog?.status || "Open";
                     let hours = data.submissionLog?.hours || "-";
+                    let rejectionRemarks = data.submissionLog?.rejectionRemarks || "-";
                     if (hours !== "-") {
                         hours = ticksToTimespan(hours);
                     }
                     currentStatus = status;
                     $("#Status").val(status);
                     $("#WorkingHours").val(hours);
+                    $("#RejectionRemarks").val(rejectionRemarks);
                     return data.type;
                 }
             },

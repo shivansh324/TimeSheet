@@ -43,8 +43,16 @@
 				<div style="width: 80px; margin: auto; border-radius: 5px;" class="text-center bg-white mb-5">
 					<img src="~/VTS.png" class="img-fluid align-items-center" alt="Responsive image" width="80px">
 				</div>
-				<a asp-controller="TimeSheet" asp-action="Index">TimeSheet</a>
-				@* <a href="#">Link 2</a> *@
+				@if (!User.IsInRole("Admin"))
+				{
+					<a asp-controller="TimeSheet" asp-action="Index">TimeSheet</a>
+					<a asp-controller="Approve" asp-action="History">TimeSheet History</a>
+					<a asp-controller="Approve" asp-action="Index">TimeSheet Approval</a>
+				}
+				else
+				{
+					<a asp-controller="Approve" asp-action="History">TimeSheet History</a>
+				}
 				@if (User.IsInRole("Admin"))
 				{
 					<div class="dropdown">
