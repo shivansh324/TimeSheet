@@ -30,27 +30,27 @@ builder.Services.AddTransient<PostData>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-//builder.Services.AddQuartz(q =>
-//{
-//    var MondayJobKey = new JobKey("MondayJob");
-//    q.AddJob<MondayJob>(MondayJobKey);
+builder.Services.AddQuartz(q =>
+{
+    var MondayJobKey = new JobKey("MondayJob");
+    q.AddJob<MondayJob>(MondayJobKey);
 
-//    q.AddTrigger(trigger => trigger.ForJob(MondayJobKey).WithIdentity("MondayMorning-trigger").WithCronSchedule("0 1 0 ? * Mon")); //every Monday Morning
-//    q.AddTrigger(trigger => trigger.ForJob(MondayJobKey).WithIdentity("MondayNight-trigger").WithCronSchedule("0 00 22 ? * Mon")); //every Monday Night //AutoSubmit at 10:00 PM
+    q.AddTrigger(trigger => trigger.ForJob(MondayJobKey).WithIdentity("MondayMorning-trigger").WithCronSchedule("0 1 0 ? * Mon")); //every Monday Morning
+    q.AddTrigger(trigger => trigger.ForJob(MondayJobKey).WithIdentity("MondayNight-trigger").WithCronSchedule("0 00 22 ? * Mon")); //every Monday Night //AutoSubmit at 10:00 PM
 
-//    var SaturdayJobKey = new JobKey("SaturdayJob"); // send reminder mails to fill their timesheet
-//    q.AddJob<Saturday>(SaturdayJobKey);
+    var SaturdayJobKey = new JobKey("SaturdayJob"); // send reminder mails to fill their timesheet
+    q.AddJob<Saturday>(SaturdayJobKey);
 
-//    q.AddTrigger(trigger => trigger.ForJob(SaturdayJobKey).WithIdentity("SaturdayJob-trigger").WithCronSchedule("0 1 0 ? * Sat")); //every Saturday Morning
+    q.AddTrigger(trigger => trigger.ForJob(SaturdayJobKey).WithIdentity("SaturdayJob-trigger").WithCronSchedule("0 1 0 ? * Sat")); //every Saturday Morning
 
-//    var BatchJobKey = new JobKey("BatchJob"); //get projects from bc, get working hours of employees
-//    q.AddJob<BatchJob>(BatchJobKey);
+    var BatchJobKey = new JobKey("BatchJob"); //get projects from bc, get working hours of employees
+    q.AddJob<BatchJob>(BatchJobKey);
 
-//    q.AddTrigger(trigger => trigger.ForJob(BatchJobKey).WithIdentity("BatchJob-trigger").WithCronSchedule("0 0/30 * * * ?")); //every 30 minutes
-//    q.AddTrigger(trigger => trigger.ForJob(BatchJobKey).WithIdentity("EveningJob-trigger").WithCronSchedule("0 30 23 * * ?")); //every Evening
-//});
-//// Add Quartz hosted service
-//builder.Services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true); //if shutdown, then will wait for job to execute then exit.
+    q.AddTrigger(trigger => trigger.ForJob(BatchJobKey).WithIdentity("BatchJob-trigger").WithCronSchedule("0 0/30 * * * ?")); //every 30 minutes
+    q.AddTrigger(trigger => trigger.ForJob(BatchJobKey).WithIdentity("EveningJob-trigger").WithCronSchedule("0 30 23 * * ?")); //every Evening
+});
+// Add Quartz hosted service
+builder.Services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true); //if shutdown, then will wait for job to execute then exit.
 
 builder.Services.AddAuthentication(options =>
 {

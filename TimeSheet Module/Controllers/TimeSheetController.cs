@@ -266,7 +266,7 @@ namespace TimeSheet_Module.Controllers
                 }
                 else
                 {
-                    if (Hours.Ticks > workingHours.Hours)
+                    if (Hours.Ticks > workingHours.HoursLeft)
                     {
                         return StatusCode(400, new { error = "You cannot add more than Actual working hours" });
                     }

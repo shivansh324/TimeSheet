@@ -86,7 +86,7 @@ namespace TimeSheet_Module.Services.Jobs
         public async Task GetProjects()
         {
             List<string> left_code = new List<string>();
-            string api_url = $"http://192.168.100.26:9148/BC230/ODataV4/Company('REPL')/TimesheetData?$filter=TDate%20ge%20{DateOnly.FromDateTime(DateTime.Now)}%20and%20TDate%20le%20{DateOnly.FromDateTime(DateTime.Now)}";
+            string api_url = $"http://192.168.100.26:9148/BC230/ODataV4/Company('REPL')/TimesheetData?$filter=TDate%20ge%20{DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd")}%20and%20TDate%20le%20{DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd")}";
             List<BCProject> projects_list = new List<BCProject>();
             while (!string.IsNullOrEmpty(api_url))
             {
@@ -205,12 +205,12 @@ namespace TimeSheet_Module.Services.Jobs
             if (triggerName == "BatchJob-trigger")
             {
                 Console.WriteLine("Running job: 30MinProjectBatchJob");
-                //GetProjects();
+                GetProjects();
             }
             else if (triggerName == "EveningJob-trigger")
             {
                 Console.WriteLine("Running job: EveningAttendanceJob");
-                //GetWorkingHours();
+                GetWorkingHours();
             }
             return Task.CompletedTask;
         }

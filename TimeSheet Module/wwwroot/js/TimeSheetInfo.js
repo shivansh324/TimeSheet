@@ -102,7 +102,7 @@ function getHoursForDay(timesheets, day, id, date, project, status = "Open") {
                   </button>`;
         } else {
             return `<button class="btn btn-sm btn-light day-btn timesheet-btn"
-                 onClick="WeekModal('${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}',${id},0,null,true,${project},0)">-</button>`;
+                 onClick="WeekModal('${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}',${id},0,null,${project ? true : false},${project},0)">-</button>`;
         }
     }
 }

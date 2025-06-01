@@ -83,7 +83,7 @@ namespace TimeSheet_Module.Controllers
         //public async Task<IActionResult> SetProjects()
         //{
         //    List<string> left_code = new List<string>();
-        //    string api_url = $"http://192.168.100.26:9148/BC230/ODataV4/Company('REPL')/TimesheetData?$filter=TDate%20ge%202025-05-01%20and%20TDate%20le%202025-05-30";
+        //    string api_url = $"http://192.168.100.26:9148/BC230/ODataV4/Company('REPL')/TimesheetData?$filter=TDate%20ge%202025-05-01%20and%20TDate%20le%202025-06-30";
         //    List<BCProject> projects_list = new List<BCProject>();
         //    while (!string.IsNullOrEmpty(api_url))
         //    {
@@ -200,6 +200,121 @@ namespace TimeSheet_Module.Controllers
 
         #endregion
 
+        public async Task GetProjects()
+        {
+            List<string> left_code = new List<string>();
+            string api_url = $"http://192.168.100.26:9148/BC230/ODataV4/Company('REPL')/TimesheetData?$filter=TDate%20ge%20{DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd")}%20and%20TDate%20le%20{DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd")}";
+            List<BCProject> projects_list = new List<BCProject>();
+            while (!string.IsNullOrEmpty(api_url))
+            {
+                HttpResponseMessage api_response = await _httpClientBC.GetAsync(api_url);
+                if (!api_response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"API call failed: {api_response.StatusCode} - {api_response.ReasonPhrase}");
+                }
+                BCProjectModel timesheetData = JsonSerializer.Deserialize<BCProjectModel>(api_response.Content.ReadAsStringAsync().Result);
+                projects_list.AddRange(timesheetData.value);
+                if (timesheetData.ODataNextLink != null)
+                {
+                    api_url = timesheetData.ODataNextLink;
+                }
+                else
+                {
+                    api_url = null;
+                }
+            }
+            foreach (var data in projects_list)
+            {
+                Employee? emp = _db.Employees.Where(x => x.Status == "Active").FirstOrDefault(x => x.EmployeeCode == data.employeeCode);
+                if (emp == null)
+                {
+                    left_code.Add(data.employeeCode);
+                    continue;
+                }
+                Project? project = _db.Projects.FirstOrDefault(x => x.ProjectCode == data.projectCode && x.EmployeeId == emp.Id);
+                if (project == null)
+                {
+                    project = new()
+                    {
+                        ProjectCode = data.projectCode,
+                        ProjectDescription = data.projectName,
+                        StartDate = DateOnly.FromDateTime(DateTime.ParseExact(data.ProjectStartDate != "" ? data.ProjectStartDate : "01/01/01", "MM/dd/yy", CultureInfo.InvariantCulture)),
+                        EndDate = DateOnly.FromDateTime(DateTime.ParseExact(data.ProjectEndDate != "" ? data.ProjectEndDate : "01/01/01", "MM/dd/yy", CultureInfo.InvariantCulture)),
+                        EmployeeId = emp.Id
+                    };
+                    await _db.Projects.AddAsync(project);
+                    await _db.SaveChangesAsync();
+                }
+                else
+                {
+                    bool isModified = false;
+                    if (!string.IsNullOrWhiteSpace(data.projectName))
+                    {
+                        project.ProjectDescription = data.projectName;
+                        isModified = true;
+                    }
+                    if (!string.IsNullOrWhiteSpace(data.ProjectStartDate))
+                    {
+                        project.StartDate = DateOnly.FromDateTime(DateTime.ParseExact(data.ProjectStartDate, "MM/dd/yy", CultureInfo.InvariantCulture));
+                        isModified = true;
+                    }
+                    if (!string.IsNullOrWhiteSpace(data.ProjectEndDate))
+                    {
+                        project.EndDate = DateOnly.FromDateTime(DateTime.ParseExact(data.ProjectEndDate, "MM/dd/yy", CultureInfo.InvariantCulture));
+                        isModified = true;
+                    }
+                    if (isModified)
+                    {
+                        _db.Update(project);
+                        await _db.SaveChangesAsync();
+                    }
+                }
+                ProjectMilestone? milestone = _db.ProjectMilestones.FirstOrDefault(x => x.ProjectId == project.Id && x.MilestoneCode == data.milestone);
+                if (milestone == null)
+                {
+                    milestone = new()
+                    {
+                        ProjectId = project.Id,
+                        TimeSheetNumber = data.Time_Sheet_No,
+                        TimeSheetLineNumber = data.Time_Sheet_Line_No,
+                        WbsId = data.wbsId,
+                        MilestoneCode = data.milestone,
+                        MilestoneDescription = data.milestoneDescription,
+                        TaskCode = data.taskCode,
+                        TaskDescription = data.taskDescription,
+                        AssignedHours = TimeSpan.FromDays(data.totalDaysAssigned).Ticks,
+                        PendingWorkingHours = TimeSpan.FromDays(data.totalDaysAssigned).Ticks,
+                        StartDate = DateOnly.FromDateTime(DateTime.ParseExact(data.MileStonStartDt != "" ? data.MileStonStartDt : "01/01/01", "MM/dd/yy", CultureInfo.InvariantCulture)),
+                        EndDate = DateOnly.FromDateTime(DateTime.ParseExact(data.MileStonEndDt != "" ? data.MileStonEndDt : "01/01/01", "MM/dd/yy", CultureInfo.InvariantCulture))
+                    };
+                    await _db.ProjectMilestones.AddAsync(milestone);
+                    await _db.SaveChangesAsync();
+                }
+                else if (milestone != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(data.milestoneDescription))
+                    {
+                        milestone.MilestoneDescription = data.milestoneDescription;
+                    }
+                    if (!string.IsNullOrWhiteSpace(data.taskDescription))
+                    {
+                        milestone.TaskDescription = data.taskDescription;
+                    }
+                    if (!string.IsNullOrWhiteSpace(data.MileStonStartDt))
+                    {
+                        milestone.StartDate = DateOnly.FromDateTime(DateTime.ParseExact(data.MileStonStartDt, "MM/dd/yy", CultureInfo.InvariantCulture));
+                    }
+                    if (!string.IsNullOrWhiteSpace(data.MileStonEndDt))
+                    {
+                        milestone.EndDate = DateOnly.FromDateTime(DateTime.ParseExact(data.MileStonEndDt, "MM/dd/yy", CultureInfo.InvariantCulture));
+                    }
+                    milestone.AssignedHours = TimeSpan.FromDays(data.totalDaysAssigned).Ticks;
+                    milestone.PendingWorkingHours = (TimeSpan.FromDays(data.totalDaysAssigned) - TimeSpan.FromTicks(milestone.TotalWorkingHours)).Ticks;
+                    _db.ProjectMilestones.Update(milestone);
+                    await _db.SaveChangesAsync();
+                }
+            }
+        }
         [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
